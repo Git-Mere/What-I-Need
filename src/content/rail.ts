@@ -104,8 +104,8 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       flex-direction: column;
       width: 340px;
       height: auto;
-      min-height: min(440px, 80vh);
-      max-height: 80vh;
+      min-height: min(440px, 85vh);
+      max-height: 85vh;
       box-sizing: border-box;
       border: 1px solid rgba(15, 23, 42, 0.18);
       border-right: 0;
@@ -118,9 +118,8 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     .wid-rail-root[data-mode="expanded"] .wid-expanded {
       display: flex;
       position: fixed;
-      top: 50%;
+      top: 10vh;
       right: 0;
-      transform: translateY(-50%);
     }
 
     .wid-expanded-close {
