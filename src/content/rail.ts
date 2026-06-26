@@ -104,7 +104,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       flex-direction: column;
       width: 340px;
       height: auto;
-      min-height: 440px;
+      min-height: min(440px, 80vh);
       max-height: 80vh;
       box-sizing: border-box;
       border: 1px solid rgba(15, 23, 42, 0.18);
