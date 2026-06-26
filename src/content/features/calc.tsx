@@ -81,12 +81,11 @@ function applyBinary(
   }
 }
 
-function historyLabel(item: WidCalcHistoryItem): string {
-  const time = new Date(item.at).toLocaleTimeString([], {
+function historyTime(item: WidCalcHistoryItem): string {
+  return new Date(item.at).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit"
   });
-  return `${time} ${item.expr} ${item.result}`;
 }
 
 export function Calculator() {
@@ -377,7 +376,8 @@ export function Calculator() {
             ) : (
               history.slice().reverse().map((item) => (
                 <div class="wid-calc-history-item" key={`${item.at}-${item.expr}`}>
-                  {historyLabel(item)}
+                  <span class="wid-calc-history-calc">{item.expr} {item.result}</span>
+                  <span class="wid-calc-history-time">{historyTime(item)}</span>
                 </div>
               ))
             )}

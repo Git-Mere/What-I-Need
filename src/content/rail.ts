@@ -327,7 +327,30 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       border-radius: 6px;
     }
 
-    .wid-calc-history-item,
+    .wid-calc-history-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      color: #475569;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-calc-history-calc {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .wid-calc-history-time {
+      flex: 0 0 auto;
+      margin-left: auto;
+      color: #cbd5e1;
+      font-size: 11px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
     .wid-calc-history-empty {
       color: #475569;
       font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
