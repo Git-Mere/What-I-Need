@@ -26,3 +26,7 @@ yarn-error.log*
 .idea/
 .vscode/
 *.swp
+
+# polly orchestration
+.worktrees/
+.polly/
