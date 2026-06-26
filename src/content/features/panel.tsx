@@ -32,23 +32,6 @@ function Panel({ initialFeature, onClose }: PanelProps) {
 
   return (
     <div class="wid-expanded">
-      <div class="wid-expanded-header">
-        <span class="wid-expanded-title">{active}</span>
-        <button
-          type="button"
-          class="wid-expanded-close"
-          title="Collapse"
-          aria-label="Collapse panel"
-          onClick={onClose}
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="wid-expanded-content">
-        <FeatureContent feature={active} />
-      </div>
-
       <div class="wid-expanded-bar" role="tablist">
         {FEATURES.map((feature) => (
           <button
@@ -64,6 +47,19 @@ function Panel({ initialFeature, onClose }: PanelProps) {
             {feature.label}
           </button>
         ))}
+        <button
+          type="button"
+          class="wid-expanded-close"
+          title="Collapse"
+          aria-label="Collapse panel"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="wid-expanded-content">
+        <FeatureContent feature={active} />
       </div>
     </div>
   );

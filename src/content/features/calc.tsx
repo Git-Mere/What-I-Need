@@ -92,6 +92,7 @@ function historyLabel(item: WidCalcHistoryItem): string {
 export function Calculator() {
   const [state, setState] = useState<CalcState>(INITIAL_STATE);
   const [history, setHistory] = useState<WidCalcHistoryItem[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -310,8 +311,14 @@ export function Calculator() {
     });
   };
 
+  const indicator =
+    state.error === null && state.pendingOperator !== null && state.storedValue !== null
+      ? `${formatOperand(state.storedValue)} ${state.pendingOperator}`
+      : "";
+
   return (
     <div class="wid-calc">
+      <div class="wid-calc-indicator" aria-hidden="true">{indicator}</div>
       <div class="wid-calc-display" aria-live="polite">{state.display}</div>
 
       <div class="wid-calc-keypad" aria-label="Calculator keypad">
@@ -346,24 +353,36 @@ export function Calculator() {
         <button type="button" class="wid-calc-button wid-calc-button-equals" onClick={evaluate}>=</button>
       </div>
 
-      <div class="wid-calc-history">
-        <div class="wid-calc-history-header">
-          <span>History</span>
-          <button type="button" class="wid-calc-history-clear" onClick={clearHistory} disabled={history.length === 0}>
-            Clear
+      <div class="wid-calc-history" data-open={historyOpen}>
+        <div class="wid-calc-history-bar">
+          <button
+            type="button"
+            class="wid-calc-history-toggle"
+            aria-expanded={historyOpen}
+            onClick={() => setHistoryOpen((open) => !open)}
+          >
+            <span>History</span>
+            <span class="wid-calc-history-caret" aria-hidden="true">{historyOpen ? "▾" : "▸"}</span>
           </button>
-        </div>
-        <div class="wid-calc-history-list">
-          {history.length === 0 ? (
-            <div class="wid-calc-history-empty">No calculations yet.</div>
-          ) : (
-            history.slice().reverse().map((item) => (
-              <div class="wid-calc-history-item" key={`${item.at}-${item.expr}`}>
-                {historyLabel(item)}
-              </div>
-            ))
+          {historyOpen && (
+            <button type="button" class="wid-calc-history-clear" onClick={clearHistory} disabled={history.length === 0}>
+              Clear
+            </button>
           )}
         </div>
+        {historyOpen && (
+          <div class="wid-calc-history-list">
+            {history.length === 0 ? (
+              <div class="wid-calc-history-empty">No calculations yet.</div>
+            ) : (
+              history.slice().reverse().map((item) => (
+                <div class="wid-calc-history-item" key={`${item.at}-${item.expr}`}>
+                  {historyLabel(item)}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

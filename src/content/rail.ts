@@ -51,6 +51,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     .wid-action:focus-visible,
     .wid-expanded-close:focus-visible,
     .wid-calc-button:focus-visible,
+    .wid-calc-history-toggle:focus-visible,
     .wid-calc-history-clear:focus-visible {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
@@ -102,7 +103,8 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       display: none;
       flex-direction: column;
       width: 340px;
-      height: 440px;
+      height: auto;
+      min-height: 440px;
       max-height: 80vh;
       box-sizing: border-box;
       border: 1px solid rgba(15, 23, 42, 0.18);
@@ -115,29 +117,22 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-rail-root[data-mode="expanded"] .wid-expanded {
       display: flex;
-    }
-
-    .wid-expanded-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.12);
-    }
-
-    .wid-expanded-title {
-      font: 600 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
     }
 
     .wid-expanded-close {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
+      margin-left: auto;
       display: grid;
       place-items: center;
       padding: 0;
-      border: 0;
+      border: 1px solid rgba(15, 23, 42, 0.18);
       border-radius: 6px;
-      background: transparent;
+      background: #f8fafc;
       color: #475569;
       font: 400 18px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       cursor: pointer;
@@ -156,10 +151,10 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-expanded-bar {
       display: flex;
+      align-items: center;
       gap: 6px;
-      justify-content: center;
       padding: 8px;
-      border-top: 1px solid rgba(15, 23, 42, 0.12);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.12);
       background: #f8fafc;
     }
 
@@ -190,6 +185,18 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       gap: 8px;
       color: #17202a;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-calc-indicator {
+      min-height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 10px;
+      color: #94a3b8;
+      font: 500 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-wrap: anywhere;
+      text-align: right;
     }
 
     .wid-calc-display {
@@ -253,29 +260,49 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     }
 
     .wid-calc-history {
-      min-height: 0;
       display: flex;
-      flex: 1;
       flex-direction: column;
-      border: 1px solid rgba(15, 23, 42, 0.14);
-      border-radius: 6px;
-      overflow: hidden;
+      min-height: 0;
     }
 
-    .wid-calc-history-header {
+    .wid-calc-history[data-open="true"] {
+      flex: 1 1 auto;
+    }
+
+    .wid-calc-history-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wid-calc-history-toggle {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 6px;
       padding: 6px 8px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      border-radius: 6px;
       background: #f8fafc;
+      color: #334155;
       font: 600 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-calc-history-toggle:hover {
+      background: #e8eef7;
+    }
+
+    .wid-calc-history-caret {
+      color: #64748b;
+      font-size: 10px;
     }
 
     .wid-calc-history-clear {
-      padding: 2px 6px;
+      padding: 4px 8px;
       border: 1px solid rgba(15, 23, 42, 0.16);
-      border-radius: 5px;
+      border-radius: 6px;
       background: #ffffff;
       color: #334155;
       font: 500 11px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -292,21 +319,24 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     }
 
     .wid-calc-history-list {
+      flex: 1 1 auto;
       min-height: 0;
-      flex: 1;
       overflow: auto;
-      padding: 6px 8px;
+      margin-top: 6px;
+      padding: 8px;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      border-radius: 6px;
     }
 
     .wid-calc-history-item,
     .wid-calc-history-empty {
       color: #475569;
-      font: 400 11px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow-wrap: anywhere;
     }
 
     .wid-calc-history-item + .wid-calc-history-item {
-      margin-top: 5px;
+      margin-top: 8px;
     }
 
     .wid-calc-history-empty {
