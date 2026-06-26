@@ -11,7 +11,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-rail-root {
       position: fixed;
-      top: 40%;
+      top: 25%;
       right: 0;
       z-index: 2147483647;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -345,7 +345,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     .wid-calc-history-time {
       flex: 0 0 auto;
       margin-left: auto;
-      color: #cbd5e1;
+      color: #94a3b8;
       font-size: 11px;
       text-align: right;
       white-space: nowrap;
