@@ -11,6 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
