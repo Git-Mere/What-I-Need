@@ -108,8 +108,9 @@ src/background/service-worker.ts stub
 ## 7. 자잘한 Follow-up (리뷰에서 나온 것, 모두 비차단)
 
 ### Multi-search
-- [ ] **숨김 노드 검색 제외 (교차리뷰 blocking, pre-existing)**: `collectTextNodes`가 `display:none`/`hidden`/`visibility:hidden` 요소의 텍스트를 제외하지 않음 → 안 보이는 텍스트도 매치에 잡혀 count 부풀림, ▲▼ 이동 시 화면 밖(안 보이는 곳)으로 스크롤 가능. v1부터 있던 이슈. acceptNode에서 `offsetParent===null` 또는 `getComputedStyle` 가시성 체크로 방어 가능. **다음 작업 후보**.
-- [ ] (교차리뷰 non-blocking) IME 조합 중 Enter: `event.isComposing` 체크 없이 즉시 검색/preventDefault → 한글/일본/중국어 조합 확정 Enter가 검색으로 처리될 수 있음.
+- [x] **숨김 노드 검색 제외** (`a8f6d02`) — acceptNode에서 `getComputedStyle(parent).visibility` hidden/collapse 제외 + 텍스트 노드 Range `getClientRects().length===0` 제외. 버전 무관(105+), display:none/visibility:hidden/hidden속성/content-visibility 제외, display:contents+보이는텍스트는 포함.
+- [x] **IME 조합 중 Enter 무시** (`4e6e7e0`) — `Enter && !event.isComposing`.
+- [x] **detach 노드 scrollIntoView 가드** (`4e6e7e0`) — target이 Element일 때만 호출, 아니면 no-op.
 - [ ] **알려진 한계(A안으로 출시)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음. 예: `가격은 <b>10,000</b>원` 에서 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰, 링크/볼드가 단어 중간에 낀 구절. 단일 단어의 일반 본문 검색은 정상. 필요하면 크로스-노드 Range 병합으로 개선(B안).
 - [ ] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능.
 - [ ] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전
