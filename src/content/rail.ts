@@ -425,6 +425,30 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       font-variant-numeric: tabular-nums;
     }
 
+    .wid-search-nav {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #475569;
+      font: 400 10px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-search-nav:hover:not(:disabled) {
+      background: #e8eef7;
+    }
+
+    .wid-search-nav:disabled {
+      cursor: default;
+      opacity: 0.35;
+    }
+
     .wid-search-remove {
       flex: 0 0 auto;
       width: 24px;
@@ -460,8 +484,13 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       cursor: pointer;
     }
 
-    .wid-search-add:hover {
+    .wid-search-add:hover:not(:disabled) {
       background: #f1f5f9;
+    }
+
+    .wid-search-add:disabled {
+      cursor: default;
+      opacity: 0.45;
     }
 
     .wid-search-run {
@@ -481,6 +510,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-search-add:focus-visible,
     .wid-search-run:focus-visible,
+    .wid-search-nav:focus-visible,
     .wid-search-remove:focus-visible {
       outline: 2px solid #2563eb;
       outline-offset: 2px;

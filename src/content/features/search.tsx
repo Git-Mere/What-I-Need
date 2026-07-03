@@ -1,16 +1,24 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
-// Highlight colors assigned by row order; cycles when there are more rows.
+// One distinct color per row. Rows are capped at PALETTE.length, so each row
+// keeps a unique color assigned 1:1 by index (no cycling / sharing).
 const PALETTE = [
   "#fde047", // yellow
-  "#7dd3fc", // sky
-  "#f9a8d4", // pink
-  "#bef264", // lime
   "#fdba74", // orange
-  "#c4b5fd" // violet
+  "#fca5a5", // salmon
+  "#f9a8d4", // pink
+  "#f0abfc", // magenta
+  "#c4b5fd", // violet
+  "#a5b4fc", // indigo
+  "#7dd3fc", // sky
+  "#6ee7b7", // teal
+  "#bef264" // lime
 ];
 
+const MAX_ROWS = PALETTE.length;
+
 const HIGHLIGHT_PREFIX = "wid-search-";
+const ACTIVE_HIGHLIGHT = "wid-search-active";
 const STYLE_ID = "wid-search-highlight-style";
 const SHADOW_HOST_ID = "wid-shadow-host";
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "NOSCRIPT"]);
@@ -21,8 +29,13 @@ type SearchRow = {
   count: number | null;
 };
 
+type ActiveMatch = {
+  rowId: number;
+  matchIndex: number;
+};
+
 function colorFor(index: number): string {
-  return PALETTE[index % PALETTE.length];
+  return PALETTE[index];
 }
 
 // Host-document <style> that maps each highlight name to its color. Shadow DOM
@@ -33,10 +46,15 @@ function ensureHighlightStyle(): void {
   }
   const style = document.createElement("style");
   style.id = STYLE_ID;
-  style.textContent = PALETTE.map(
-    (color, index) =>
-      `::highlight(${HIGHLIGHT_PREFIX}${index}) { background-color: ${color}; color: #17202a; }`
-  ).join("\n");
+  style.textContent = [
+    ...PALETTE.map(
+      (color, index) =>
+        `::highlight(${HIGHLIGHT_PREFIX}${index}) { background-color: ${color}; color: #17202a; }`
+    ),
+    // Active match: strong high-contrast fill (border/outline are not honored by
+    // ::highlight, so use a bold background plus an underline instead).
+    `::highlight(${ACTIVE_HIGHLIGHT}) { background-color: #ff6a00; color: #ffffff; text-decoration: underline; }`
+  ].join("\n");
   (document.head ?? document.documentElement).append(style);
 }
 
@@ -44,10 +62,15 @@ function removeHighlightStyle(): void {
   document.getElementById(STYLE_ID)?.remove();
 }
 
+function clearActiveHighlight(): void {
+  CSS.highlights.delete(ACTIVE_HIGHLIGHT);
+}
+
 function clearHighlights(): void {
   for (let index = 0; index < PALETTE.length; index += 1) {
     CSS.highlights.delete(`${HIGHLIGHT_PREFIX}${index}`);
   }
+  clearActiveHighlight();
 }
 
 function collectTextNodes(): Text[] {
@@ -100,35 +123,47 @@ function findRanges(textNodes: Text[], term: string): Range[] {
   return ranges;
 }
 
-// Highlights every non-empty term on the page and returns per-row match counts
-// (null for empty terms). Terms sharing a color slot merge into one Highlight.
-function applySearch(terms: string[]): (number | null)[] {
+// Highlights every non-empty term on the page. Returns per-row match counts
+// (null for empty terms) plus the per-row Ranges so callers can navigate them.
+function applySearch(terms: string[]): {
+  counts: (number | null)[];
+  ranges: Range[][];
+} {
   const textNodes = collectTextNodes();
-  const perColor: Range[][] = PALETTE.map(() => []);
   const counts: (number | null)[] = [];
+  const ranges: Range[][] = [];
 
-  terms.forEach((term, index) => {
+  terms.forEach((term) => {
     if (!term.trim()) {
       counts.push(null);
+      ranges.push([]);
       return;
     }
-    const ranges = findRanges(textNodes, term);
-    counts.push(ranges.length);
-    perColor[index % PALETTE.length].push(...ranges);
+    const found = findRanges(textNodes, term);
+    counts.push(found.length);
+    ranges.push(found);
   });
 
   clearHighlights();
   ensureHighlightStyle();
-  perColor.forEach((ranges, colorIndex) => {
-    if (ranges.length > 0) {
+  ranges.forEach((rowRanges, index) => {
+    if (rowRanges.length > 0) {
       CSS.highlights.set(
-        `${HIGHLIGHT_PREFIX}${colorIndex}`,
-        new Highlight(...ranges)
+        `${HIGHLIGHT_PREFIX}${index}`,
+        new Highlight(...rowRanges)
       );
     }
   });
 
-  return counts;
+  return { counts, ranges };
+}
+
+function scrollRangeIntoView(range: Range): void {
+  // Range has no scrollIntoView; center the element containing the match.
+  const target =
+    range.startContainer.parentElement ??
+    (range.startContainer as Element | null);
+  target?.scrollIntoView({ block: "center", inline: "nearest" });
 }
 
 let nextRowId = 0;
@@ -138,14 +173,11 @@ function makeRow(): SearchRow {
   return { id: nextRowId, term: "", count: null };
 }
 
-// Runs the search for the given rows and returns them with refreshed counts.
-function searchedRows(rows: SearchRow[]): SearchRow[] {
-  const counts = applySearch(rows.map((row) => row.term));
-  return rows.map((row, index) => ({ ...row, count: counts[index] ?? null }));
-}
-
 export function Search() {
   const [rows, setRows] = useState<SearchRow[]>(() => [makeRow()]);
+  const [active, setActive] = useState<ActiveMatch | null>(null);
+  // Ranges from the last search, keyed by row id, for ▲▼ navigation.
+  const rangesRef = useRef<Map<number, Range[]>>(new Map());
 
   useEffect(() => {
     // Stateless feature: wipe every highlight when the panel closes.
@@ -155,18 +187,35 @@ export function Search() {
     };
   }, []);
 
+  // Runs the search, refreshes counts/ranges, and resets the active match.
+  const runSearchFor = (nextRows: SearchRow[]) => {
+    const { counts, ranges } = applySearch(nextRows.map((row) => row.term));
+    const map = new Map<number, Range[]>();
+    nextRows.forEach((row, index) => {
+      map.set(row.id, ranges[index] ?? []);
+    });
+    rangesRef.current = map;
+    setActive(null);
+    setRows(nextRows.map((row, index) => ({ ...row, count: counts[index] ?? null })));
+  };
+
   const runSearch = () => {
-    setRows(searchedRows(rows));
+    runSearchFor(rows);
   };
 
   const updateTerm = (id: number, term: string) => {
+    // Editing a term makes the active match stale; drop it.
+    clearActiveHighlight();
+    setActive(null);
     setRows((current) =>
       current.map((row) => (row.id === id ? { ...row, term } : row))
     );
   };
 
   const addRow = () => {
-    setRows((current) => [...current, makeRow()]);
+    setRows((current) =>
+      current.length >= MAX_ROWS ? current : [...current, makeRow()]
+    );
   };
 
   const removeRow = (id: number) => {
@@ -174,7 +223,31 @@ export function Search() {
       return;
     }
     // Re-run so highlights and colors follow the new row order.
-    setRows(searchedRows(rows.filter((row) => row.id !== id)));
+    runSearchFor(rows.filter((row) => row.id !== id));
+  };
+
+  // Move the single active match within a row (direction 1 = next, -1 = prev),
+  // wrapping at the ends. Activating a new row moves the highlight to it.
+  const navigate = (rowId: number, direction: 1 | -1) => {
+    const ranges = rangesRef.current.get(rowId);
+    if (!ranges || ranges.length === 0) {
+      return;
+    }
+    const total = ranges.length;
+    const matchIndex =
+      active && active.rowId === rowId
+        ? (active.matchIndex + direction + total) % total
+        : direction === 1
+          ? 0
+          : total - 1;
+
+    const range = ranges[matchIndex];
+    ensureHighlightStyle();
+    const highlight = new Highlight(range);
+    highlight.priority = 1; // paint above the per-row color highlight
+    CSS.highlights.set(ACTIVE_HIGHLIGHT, highlight);
+    setActive({ rowId, matchIndex });
+    scrollRangeIntoView(range);
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -187,41 +260,76 @@ export function Search() {
   return (
     <div class="wid-search">
       <div class="wid-search-rows">
-        {rows.map((row, index) => (
-          <div class="wid-search-row" key={row.id}>
-            <span
-              class="wid-search-dot"
-              style={{ background: colorFor(index) }}
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              class="wid-search-input"
-              placeholder="Search term"
-              value={row.term}
-              onInput={(event) =>
-                updateTerm(row.id, (event.currentTarget as HTMLInputElement).value)
-              }
-              onKeyDown={handleKeyDown}
-            />
-            <span class="wid-search-count" aria-hidden={row.count === null}>
-              {row.count === null ? "" : row.count}
-            </span>
-            <button
-              type="button"
-              class="wid-search-remove"
-              title="Remove row"
-              aria-label="Remove row"
-              disabled={rows.length <= 1}
-              onClick={() => removeRow(row.id)}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+        {rows.map((row, index) => {
+          const hasMatches = row.count !== null && row.count > 0;
+          const isActive = active?.rowId === row.id;
+          const countLabel =
+            row.count === null
+              ? ""
+              : isActive && hasMatches
+                ? `${active!.matchIndex + 1} / ${row.count}`
+                : String(row.count);
+          return (
+            <div class="wid-search-row" key={row.id}>
+              <span
+                class="wid-search-dot"
+                style={{ background: colorFor(index) }}
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                class="wid-search-input"
+                placeholder="Search term"
+                value={row.term}
+                onInput={(event) =>
+                  updateTerm(row.id, (event.currentTarget as HTMLInputElement).value)
+                }
+                onKeyDown={handleKeyDown}
+              />
+              <span class="wid-search-count" aria-hidden={row.count === null}>
+                {countLabel}
+              </span>
+              <button
+                type="button"
+                class="wid-search-nav"
+                title="Previous match"
+                aria-label="Previous match"
+                disabled={!hasMatches}
+                onClick={() => navigate(row.id, -1)}
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                class="wid-search-nav"
+                title="Next match"
+                aria-label="Next match"
+                disabled={!hasMatches}
+                onClick={() => navigate(row.id, 1)}
+              >
+                ▼
+              </button>
+              <button
+                type="button"
+                class="wid-search-remove"
+                title="Remove row"
+                aria-label="Remove row"
+                disabled={rows.length <= 1}
+                onClick={() => removeRow(row.id)}
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
       </div>
 
-      <button type="button" class="wid-search-add" onClick={addRow}>
+      <button
+        type="button"
+        class="wid-search-add"
+        disabled={rows.length >= MAX_ROWS}
+        onClick={addRow}
+      >
         + Add term
       </button>
 

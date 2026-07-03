@@ -79,11 +79,11 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-### A. 검색 (Multi-search) — ✅ 완료 (`8122225`)
-- 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행), 아래 + 버튼으로 행 추가. 각 행 `[색점][입력칸][매치수][× 삭제]`. **엔터 또는 검색 버튼** 누를 때 실행(실시간 아님). 검색어별 다른 색으로 현재 페이지 하이라이트, 대소문자 무시, 무상태.
+### A. 검색 (Multi-search) — ✅ 완료 (v1 `8122225`, v2 nav/10색/10개제한)
+- 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`. **엔터 또는 검색 버튼** 누를 때 실행(실시간 아님). 검색어별 다른 색으로 하이라이트, 대소문자 무시, 무상태.
 - 구현: `src/content/features/search.tsx`. CSS Custom Highlight API(`CSS.highlights`/`Highlight`/`Range`)로 DOM 무변형 하이라이트. `::highlight()` 스타일은 호스트 문서 head에 주입, 언마운트 시 하이라이트+스타일 제거.
-- 색 팔레트 6색 순환. 자기 UI(`#wid-shadow-host`)와 SCRIPT/STYLE/TEXTAREA/NOSCRIPT는 검색 제외.
-- 다음/이전 이동은 v1 제외.
+- 색 팔레트 **10색(순환 없음, 행 index와 1:1)**. 자기 UI(`#wid-shadow-host`)와 SCRIPT/STYLE/TEXTAREA/NOSCRIPT는 검색 제외.
+- **행별 ▲▼ 이동**: 그 행 매치 순회(래핑). 전역 활성 매치 1개만 강조(`wid-search-active`, 진한 배경 `#ff6a00` priority=1) + `scrollIntoView` 중앙. 활성 행은 `현재/전체`, 비활성 `전체`. 매치 0이면 ▲▼ disabled.
 
 ### B. 마커 (Marker) — 휘발성
 - 페이지 특정 위치에 마커 표시, 페이지 떠나면 소멸 (메모리만)
@@ -108,6 +108,7 @@ src/background/service-worker.ts stub
 
 ### Multi-search
 - [ ] **알려진 한계(A안으로 출시)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음. 예: `가격은 <b>10,000</b>원` 에서 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰, 링크/볼드가 단어 중간에 낀 구절. 단일 단어의 일반 본문 검색은 정상. 필요하면 크로스-노드 Range 병합으로 개선(B안).
+- [ ] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능.
 - [ ] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전
 
 ### 메모
