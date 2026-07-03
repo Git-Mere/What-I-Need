@@ -79,7 +79,9 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-### A. 검색 (Multi-search) — ✅ 완료 (v1 `8122225`, v2 nav/10색/10개제한)
+> **현재 기준 다음 작업 = C. Brush** (Multi-search는 완료/종료, 크로스노드 한계만 A안으로 남김)
+
+### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
 - 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
 - **자동 검색(기본)**: 입력을 멈추면 250ms 디바운스 후 자동 검색(Search 버튼 없음). Enter는 디바운스 건너뛰고 즉시 검색. 검색어별 다른 색 하이라이트, 대소문자 무시, 무상태.
 - 구현: `src/content/features/search.tsx`. CSS Custom Highlight API(`CSS.highlights`/`Highlight`/`Range`)로 DOM 무변형 하이라이트. `::highlight()` 스타일은 호스트 문서 head에 주입, 언마운트 시 하이라이트+스타일+pending 디바운스 타이머 제거.
@@ -91,9 +93,10 @@ src/background/service-worker.ts stub
 - **UI 주의**: 스크롤바에 직접 못 붙임(브라우저 차단) → 스크롤바 옆에 **미니맵 형태의 자체 레일**로 구현
 - **SPA 주의**: URL이 바뀌어도 리로드 안 되는 사이트(유튜브 등)에선 마커가 남을 수 있음 → history API 변경 감지해서 정리할지 추후 결정 (기본은 "휘발")
 
-### C. Brush — 휘발성
+### C. Brush — 휘발성 ← **다음 작업 1순위**
 - 페이지 위 자유 그리기 (canvas), 페이지 떠나면 소멸
 - brush 설정(색/굵기/단축키) 타입은 `wid:settings.brush` 에 이미 정의돼 있음
+- **시작 전 스펙 합의 필요**: 캔버스 범위(전체 화면 vs 보이는 영역), 툴바(색/굵기/지우개) 위치, 패널과의 상호작용(그리기 중 패널/레일 클릭 처리), 마우스 이벤트 통과 여부 등
 
 ### D. 레일 on/off 토글 (전역 + 사이트별)
 - `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
