@@ -80,9 +80,10 @@ src/background/service-worker.ts stub
 ## 6. 앞으로 개발할 것 (로드맵)
 
 ### A. 검색 (Multi-search) — ✅ 완료 (v1 `8122225`, v2 nav/10색/10개제한)
-- 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`. **엔터 또는 검색 버튼** 누를 때 실행(실시간 아님). 검색어별 다른 색으로 하이라이트, 대소문자 무시, 무상태.
-- 구현: `src/content/features/search.tsx`. CSS Custom Highlight API(`CSS.highlights`/`Highlight`/`Range`)로 DOM 무변형 하이라이트. `::highlight()` 스타일은 호스트 문서 head에 주입, 언마운트 시 하이라이트+스타일 제거.
-- 색 팔레트 **10색(순환 없음, 행 index와 1:1)**. 자기 UI(`#wid-shadow-host`)와 SCRIPT/STYLE/TEXTAREA/NOSCRIPT는 검색 제외.
+- 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
+- **자동 검색(기본)**: 입력을 멈추면 250ms 디바운스 후 자동 검색(Search 버튼 없음). Enter는 디바운스 건너뛰고 즉시 검색. 검색어별 다른 색 하이라이트, 대소문자 무시, 무상태.
+- 구현: `src/content/features/search.tsx`. CSS Custom Highlight API(`CSS.highlights`/`Highlight`/`Range`)로 DOM 무변형 하이라이트. `::highlight()` 스타일은 호스트 문서 head에 주입, 언마운트 시 하이라이트+스타일+pending 디바운스 타이머 제거.
+- 색 팔레트 **10색(순환 없음, 행 index와 1:1)** — hue 전체 색상환 ~36도 간격으로 배치, 전 색 #17202a 대비 WCAG AA(>=4.5:1). 자기 UI(`#wid-shadow-host`)와 SCRIPT/STYLE/TEXTAREA/NOSCRIPT는 검색 제외.
 - **행별 ▲▼ 이동**: 그 행 매치 순회(래핑). 전역 활성 매치 1개만 강조(`wid-search-active`, 진한 배경 `#ff6a00` priority=1) + `scrollIntoView` 중앙. 활성 행은 `현재/전체`, 비활성 `전체`. 매치 0이면 ▲▼ disabled.
 
 ### B. 마커 (Marker) — 휘발성
@@ -107,6 +108,8 @@ src/background/service-worker.ts stub
 ## 7. 자잘한 Follow-up (리뷰에서 나온 것, 모두 비차단)
 
 ### Multi-search
+- [ ] **숨김 노드 검색 제외 (교차리뷰 blocking, pre-existing)**: `collectTextNodes`가 `display:none`/`hidden`/`visibility:hidden` 요소의 텍스트를 제외하지 않음 → 안 보이는 텍스트도 매치에 잡혀 count 부풀림, ▲▼ 이동 시 화면 밖(안 보이는 곳)으로 스크롤 가능. v1부터 있던 이슈. acceptNode에서 `offsetParent===null` 또는 `getComputedStyle` 가시성 체크로 방어 가능. **다음 작업 후보**.
+- [ ] (교차리뷰 non-blocking) IME 조합 중 Enter: `event.isComposing` 체크 없이 즉시 검색/preventDefault → 한글/일본/중국어 조합 확정 Enter가 검색으로 처리될 수 있음.
 - [ ] **알려진 한계(A안으로 출시)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음. 예: `가격은 <b>10,000</b>원` 에서 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰, 링크/볼드가 단어 중간에 낀 구절. 단일 단어의 일반 본문 검색은 정상. 필요하면 크로스-노드 Range 병합으로 개선(B안).
 - [ ] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능.
 - [ ] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전
