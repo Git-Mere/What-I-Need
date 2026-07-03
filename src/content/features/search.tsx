@@ -97,6 +97,18 @@ function collectTextNodes(): Text[] {
       if (!node.nodeValue || !node.nodeValue.trim()) {
         return NodeFilter.FILTER_REJECT;
       }
+      // Skip text in hidden elements: display:none, visibility:hidden, the
+      // hidden attribute, and content-visibility-hidden all read as invisible.
+      // opacity is intentionally ignored (opacityProperty:false).
+      if (
+        !parent.checkVisibility({
+          contentVisibilityAuto: true,
+          opacityProperty: false,
+          visibilityProperty: true
+        })
+      ) {
+        return NodeFilter.FILTER_REJECT;
+      }
       return NodeFilter.FILTER_ACCEPT;
     }
   });
@@ -166,10 +178,16 @@ function applySearch(terms: string[]): {
 
 function scrollRangeIntoView(range: Range): void {
   // Range has no scrollIntoView; center the element containing the match.
+  // Guard against a detached Text node whose parentElement is null: only an
+  // Element has scrollIntoView, so skip when we can't resolve one.
+  const container = range.startContainer;
   const target =
-    range.startContainer.parentElement ??
-    (range.startContainer as Element | null);
-  target?.scrollIntoView({ block: "center", inline: "nearest" });
+    container.nodeType === Node.ELEMENT_NODE
+      ? (container as Element)
+      : container.parentElement;
+  if (target instanceof Element) {
+    target.scrollIntoView({ block: "center", inline: "nearest" });
+  }
 }
 
 let nextRowId = 0;
@@ -280,7 +298,7 @@ export function Search() {
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.isComposing) {
       // Skip the debounce and search immediately.
       event.preventDefault();
       clearPending();
