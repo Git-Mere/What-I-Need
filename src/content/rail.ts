@@ -365,6 +365,127 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       color: #94a3b8;
     }
 
+    .wid-search {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #17202a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-search-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .wid-search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wid-search-dot {
+      flex: 0 0 auto;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.2);
+    }
+
+    .wid-search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      box-sizing: border-box;
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #17202a;
+      font: 400 13px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-search-input:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 0;
+    }
+
+    .wid-search-count {
+      flex: 0 0 auto;
+      min-width: 20px;
+      text-align: right;
+      color: #64748b;
+      font: 500 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wid-search-remove {
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #475569;
+      font: 400 16px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-search-remove:hover:not(:disabled) {
+      background: #e8eef7;
+    }
+
+    .wid-search-remove:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+
+    .wid-search-add {
+      align-self: flex-start;
+      padding: 6px 10px;
+      border: 1px dashed rgba(15, 23, 42, 0.28);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #334155;
+      font: 500 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-search-add:hover {
+      background: #f1f5f9;
+    }
+
+    .wid-search-run {
+      margin-top: auto;
+      height: 34px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      font: 600 13px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-search-run:hover {
+      background: #1d4ed8;
+    }
+
+    .wid-search-add:focus-visible,
+    .wid-search-run:focus-visible,
+    .wid-search-remove:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+
     .wid-coming-soon {
       flex: 1;
       display: flex;

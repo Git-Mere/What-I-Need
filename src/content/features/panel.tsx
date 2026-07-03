@@ -4,6 +4,7 @@ import { useState } from "preact/hooks";
 import { FEATURES, type WidFeatureName } from "./registry";
 import { Calculator } from "./calc";
 import { Memo } from "./memo";
+import { Search } from "./search";
 
 type PanelProps = {
   initialFeature: WidFeatureName;
@@ -17,6 +18,10 @@ function FeatureContent({ feature }: { feature: WidFeatureName }) {
 
   if (feature === "Calculator") {
     return <Calculator />;
+  }
+
+  if (feature === "Multi-search") {
+    return <Search />;
   }
 
   return (
