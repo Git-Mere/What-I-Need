@@ -17,6 +17,9 @@ const PALETTE = [
 
 const MAX_ROWS = PALETTE.length;
 
+// Auto-search debounce: re-run every row this long after the last keystroke.
+const DEBOUNCE_MS = 250;
+
 const HIGHLIGHT_PREFIX = "wid-search-";
 const ACTIVE_HIGHLIGHT = "wid-search-active";
 const STYLE_ID = "wid-search-highlight-style";
@@ -178,10 +181,24 @@ export function Search() {
   const [active, setActive] = useState<ActiveMatch | null>(null);
   // Ranges from the last search, keyed by row id, for ▲▼ navigation.
   const rangesRef = useRef<Map<number, Range[]>>(new Map());
+  // Mirror of `rows` so the debounced search reads the latest terms.
+  const rowsRef = useRef<SearchRow[]>(rows);
+  rowsRef.current = rows;
+  // Pending auto-search timer (null when idle).
+  const debounceRef = useRef<number | null>(null);
+
+  const clearPending = () => {
+    if (debounceRef.current !== null) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    // Stateless feature: wipe every highlight when the panel closes.
+    // Stateless feature: wipe every highlight and drop any pending timer when
+    // the panel closes.
     return () => {
+      clearPending();
       clearHighlights();
       removeHighlightStyle();
     };
@@ -199,8 +216,14 @@ export function Search() {
     setRows(nextRows.map((row, index) => ({ ...row, count: counts[index] ?? null })));
   };
 
-  const runSearch = () => {
-    runSearchFor(rows);
+  // Re-run every row DEBOUNCE_MS after the last keystroke, reading the latest
+  // rows from the ref so stacked keystrokes collapse into one search.
+  const scheduleSearch = () => {
+    clearPending();
+    debounceRef.current = window.setTimeout(() => {
+      debounceRef.current = null;
+      runSearchFor(rowsRef.current);
+    }, DEBOUNCE_MS);
   };
 
   const updateTerm = (id: number, term: string) => {
@@ -210,6 +233,7 @@ export function Search() {
     setRows((current) =>
       current.map((row) => (row.id === id ? { ...row, term } : row))
     );
+    scheduleSearch();
   };
 
   const addRow = () => {
@@ -222,7 +246,9 @@ export function Search() {
     if (rows.length <= 1) {
       return;
     }
-    // Re-run so highlights and colors follow the new row order.
+    // Re-run so highlights and colors follow the new row order. Drop any
+    // pending debounce so it can't fire against the old row set.
+    clearPending();
     runSearchFor(rows.filter((row) => row.id !== id));
   };
 
@@ -252,8 +278,10 @@ export function Search() {
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
+      // Skip the debounce and search immediately.
       event.preventDefault();
-      runSearch();
+      clearPending();
+      runSearchFor(rowsRef.current);
     }
   };
 
@@ -331,10 +359,6 @@ export function Search() {
         onClick={addRow}
       >
         + Add term
-      </button>
-
-      <button type="button" class="wid-search-run" onClick={runSearch}>
-        Search
       </button>
     </div>
   );

@@ -493,23 +493,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       opacity: 0.45;
     }
 
-    .wid-search-run {
-      margin-top: auto;
-      height: 34px;
-      border: 1px solid #2563eb;
-      border-radius: 6px;
-      background: #2563eb;
-      color: #ffffff;
-      font: 600 13px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      cursor: pointer;
-    }
-
-    .wid-search-run:hover {
-      background: #1d4ed8;
-    }
-
     .wid-search-add:focus-visible,
-    .wid-search-run:focus-visible,
     .wid-search-nav:focus-visible,
     .wid-search-remove:focus-visible {
       outline: 2px solid #2563eb;
