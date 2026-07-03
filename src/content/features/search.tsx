@@ -84,6 +84,8 @@ function collectTextNodes(): Text[] {
   if (!root) {
     return [];
   }
+  // Reused to measure whether each text node actually renders a box.
+  const measureRange = new Range();
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       const parent = node.parentElement;
@@ -97,16 +99,21 @@ function collectTextNodes(): Text[] {
       if (!node.nodeValue || !node.nodeValue.trim()) {
         return NodeFilter.FILTER_REJECT;
       }
-      // Skip text in hidden elements: display:none, visibility:hidden, the
-      // hidden attribute, and content-visibility-hidden all read as invisible.
-      // opacity is intentionally ignored (opacityProperty:false).
-      if (
-        !parent.checkVisibility({
-          contentVisibilityAuto: true,
-          opacityProperty: false,
-          visibilityProperty: true
-        })
-      ) {
+      // Skip hidden text. Two cheap-ish, version-independent checks (no reliance
+      // on checkVisibility's Chrome 121+ options):
+      //   1. visibility:hidden/collapse — inherited, so the parent's computed
+      //      value is enough.
+      //   2. display:none / content-visibility:hidden / no box — the text node
+      //      renders no client rects. This also keeps text under a
+      //      display:contents parent (which has no box itself) since the text
+      //      still lays out. opacity-hidden text has rects and a visible
+      //      computed value, so it stays searchable as before.
+      const visibility = getComputedStyle(parent).visibility;
+      if (visibility === "hidden" || visibility === "collapse") {
+        return NodeFilter.FILTER_REJECT;
+      }
+      measureRange.selectNodeContents(node);
+      if (measureRange.getClientRects().length === 0) {
         return NodeFilter.FILTER_REJECT;
       }
       return NodeFilter.FILTER_ACCEPT;
