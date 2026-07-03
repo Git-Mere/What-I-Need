@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
 // One distinct color per row. Rows are capped at PALETTE.length, so each row
-// keeps a unique color assigned 1:1 by index (no cycling / sharing).
+// keeps a unique color assigned 1:1 by index (no cycling / sharing). Hues walk
+// the whole wheel (~36deg apart) with alternating lightness so neighbors stay
+// tellable apart, and every color clears WCAG AA (>=4.5:1) against the #17202a
+// text painted on top.
 const PALETTE = [
-  "#fde047", // yellow
-  "#fdba74", // orange
-  "#fca5a5", // salmon
-  "#f9a8d4", // pink
-  "#f0abfc", // magenta
-  "#c4b5fd", // violet
-  "#a5b4fc", // indigo
-  "#7dd3fc", // sky
-  "#6ee7b7", // teal
-  "#bef264" // lime
+  "#f87782", // red (h355)
+  "#fa9e42", // orange (h30)
+  "#fbe556", // yellow (h52)
+  "#8fd65c", // lime-green (h95)
+  "#59cf94", // green (h150)
+  "#6cdada", // cyan (h180)
+  "#6cb8ef", // sky-blue (h205)
+  "#8b93ee", // indigo (h235)
+  "#ca95e4", // violet (h280)
+  "#ed82c9" // magenta-pink (h320)
 ];
 
 const MAX_ROWS = PALETTE.length;
