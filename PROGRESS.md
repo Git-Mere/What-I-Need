@@ -58,6 +58,7 @@ src/background/service-worker.ts stub
 | history-format | 기록 행 = `계산식 결과` (왼쪽) ......... `시간` (오른쪽, 연회색) | `13c0fac` |
 | rail-pos | 시간색 진하게(`#94a3b8`), 레일 위치 `top:25%` 로 올림 | `8b51885` |
 | brush-ux | 그리기 모드 커서 링(브러시=굵기, 지우개=고정 24px) + 지우개 고정 반경(보이는 원=지워지는 범위) + 레일/패널 수직 드래그 이동(3핸들, 버튼은 클릭 유지, 빈 영역만 드래그) + 위치 전역 저장 `wid:settings.railTop` | `afcf1cf` (impl claude_code / review codex) |
+| marker | 스크롤 위치 북마크 패널(휘발성, 최대 10개): `+ 마커 추가`로 현재 스크롤 저장, 목록(마커 N + %) 클릭 시 이동, 행별 × 삭제 | `619d534` (impl claude_code / review codex) |
 | brush | 문서 전체 캔버스(스크롤 따라감, 휘발성) + 패널 툴바(HSV 컬러 휠+밝기 / 굵기 / 지우개 / 일괄 지우기 / 단축키 리바인드), `` ` ``(Backquote) hold-to-draw, stroke-object 지우개(획 일부만 닿아도 전체 삭제), pointer-events 통과 | `7acdce8` (impl claude_code / review codex) |
 | multi-search | 검색어 여러 행(+버튼으로 추가), 엔터/검색 버튼 실행, 검색어별 색 하이라이트(CSS Custom Highlight API), 행별 매치수 + × 삭제, 무상태(닫으면 하이라이트 제거) | `8122225` |
 
@@ -81,8 +82,8 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-> **현재 기준 다음 작업 = B. Marker** (Brush·brush-ux 완료/머지 `afcf1cf`, Multi-search 완료/종료)
-> 그 다음 새 기능 대기 중: **F. 스포이드(Eyedropper)** — 아래 F 항목 참고
+> **현재 기준 다음 작업 = F. 스포이드(Eyedropper)** (Marker 완료/머지 `619d534`, Brush·brush-ux `afcf1cf`, Multi-search 완료/종료)
+> F 항목 스펙 참고
 
 ### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
 - 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
@@ -91,10 +92,12 @@ src/background/service-worker.ts stub
 - 색 팔레트 **10색(순환 없음, 행 index와 1:1)** — hue 전체 색상환 ~36도 간격으로 배치, 전 색 #17202a 대비 WCAG AA(>=4.5:1). 자기 UI(`#wid-shadow-host`)와 SCRIPT/STYLE/TEXTAREA/NOSCRIPT는 검색 제외.
 - **행별 ▲▼ 이동**: 그 행 매치 순회(래핑). 전역 활성 매치 1개만 강조(`wid-search-active`, 진한 배경 `#ff6a00` priority=1) + `scrollIntoView` 중앙. 활성 행은 `현재/전체`, 비활성 `전체`. 매치 0이면 ▲▼ disabled.
 
-### B. 마커 (Marker) — 휘발성
-- 페이지 특정 위치에 마커 표시, 페이지 떠나면 소멸 (메모리만)
-- **UI 주의**: 스크롤바에 직접 못 붙임(브라우저 차단) → 스크롤바 옆에 **미니맵 형태의 자체 레일**로 구현
-- **SPA 주의**: URL이 바뀌어도 리로드 안 되는 사이트(유튜브 등)에선 마커가 남을 수 있음 → history API 변경 감지해서 정리할지 추후 결정 (기본은 "휘발")
+### B. 마커 (Marker) — ✅ 완료/머지 (`619d534`, impl claude_code / review codex 0 blocking)
+- 확정/구현 스펙: **스크롤 위치 북마크**(텍스트 하이라이트 아님), 휘발성(메모리만, 페이지 떠나면 소멸)
+- 패널 리스트 방식으로 구현 (초기 "미니맵 레일" 아이디어 대신 사용자 확정 스펙): 패널에 `+ 마커 추가` 버튼 → 현재 `window.scrollY` 저장. 목록에 `마커 N` + 전체 스크롤 높이 대비 `%` 표시, 항목 클릭 시 `scrollTo({behavior:'smooth'})`로 이동, 행별 `×` 삭제, **최대 10개**(도달 시 add disabled)
+- 구현 파일: `src/content/features/marker.tsx`(Preact state, 저장소 없음) + `panel.tsx` 라우팅 + `rail.ts` `.wid-marker*` CSS. `registry.ts`의 `Marker`/`M` 엔트리는 기존에 있어 그대로 사용
+- %는 `scrollY / (scrollHeight - innerHeight)` 렌더 시 계산, unscrollable 페이지 0% 가드 + [0,100] 클램프
+- 미확정(추후 피드백): UI 문구 한국어 유지 vs 영어 통일 / SPA URL 변경 시 정리 여부(현재는 "휘발")
 
 ### C. Brush — ✅ 완료/머지 (`7acdce8`, impl claude_code / review codex 0 blocking)
 - 확정 스펙: 문서 전체 캔버스(스크롤 따라감), 휘발성(메모리만, 언로드 시 소멸)
