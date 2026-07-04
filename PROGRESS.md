@@ -59,7 +59,8 @@ src/background/service-worker.ts stub
 | rail-pos | 시간색 진하게(`#94a3b8`), 레일 위치 `top:25%` 로 올림 | `8b51885` |
 | brush-ux | 그리기 모드 커서 링(브러시=굵기, 지우개=고정 24px) + 지우개 고정 반경(보이는 원=지워지는 범위) + 레일/패널 수직 드래그 이동(3핸들, 버튼은 클릭 유지, 빈 영역만 드래그) + 위치 전역 저장 `wid:settings.railTop` | `afcf1cf` (impl claude_code / review codex) |
 | marker | 스크롤 위치 북마크 패널(휘발성, 최대 10개): 현재 스크롤 저장, 목록(Mark N + %) 클릭 시 이동, 행별 × 삭제 + rename(✎) | `619d534` / v2 `abc0453` (impl claude_code / review codex) |
-| eyedropper | 네이티브 EyeDropper 색 채집(6번째 기능): 스와치+HEX(복사)+RGB, 마지막 색 지속(`wid:eyedropper`), feature-detect | `69a5ca8` (impl claude_code / review codex) |
+| help | Help 패널(label `?`): 활성 기능 5종 간단 설명(정적, 한국어) | `ad0af71` (impl claude_code / review codex) |
+| eyedropper | ⛔ 비활성(`ad0af71`): 네이티브 EyeDropper API가 채집 후 브라우저 전체 freeze → 툴바에서 제거, 코드 보존. (v1 구현 `69a5ca8`) | disabled |
 | toolbar-color | 레일 바 배경 반투명 슬레이트(`rgba(100,116,139,0.6)` + backdrop blur) — 밝은/어두운 배경 모두 가시 | `94d0d92` (impl codex / review claude_code) |
 | brush | 문서 전체 캔버스(스크롤 따라감, 휘발성) + 패널 툴바(HSV 컬러 휠+밝기 / 굵기 / 지우개 / 일괄 지우기 / 단축키 리바인드), `` ` ``(Backquote) hold-to-draw, stroke-object 지우개(획 일부만 닿아도 전체 삭제), pointer-events 통과 | `7acdce8` (impl claude_code / review codex) |
 | multi-search | 검색어 여러 행(+버튼으로 추가), 엔터/검색 버튼 실행, 검색어별 색 하이라이트(CSS Custom Highlight API), 행별 매치수 + × 삭제, 무상태(닫으면 하이라이트 제거) | `8122225` |
@@ -84,7 +85,8 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-> **6개 기능 전부 구현 완료** (Marker `619d534`+v2 `abc0453`, Brush·brush-ux `afcf1cf`, Memo/Calc, Multi-search, Eyedropper `69a5ca8`).
+> **현재 활성 기능 = 5종 + Help**: Marker `619d534`+v2 `abc0453`, Brush·brush-ux `afcf1cf`, Memo/Calc, Multi-search, Help `ad0af71`.
+> **Eyedropper는 비활성**(`ad0af71`): 네이티브 크로뮴 `EyeDropper` API가 색 채집 성공 직후 브라우저 전체를 얼리는 플랫폼 버그(맨 페이지에서도 재현) → FEATURES에서 제거, 코드/타입/라우트는 보존(추후 스크린샷 기반 자체 스포이드로 재구현 후보).
 > 다음 후보(미확정, 사용자 확인 필요): **D. 레일 on/off 토글**(전역+사이트별) — 아래 D 항목 참고. 그 외 §7 follow-up들.
 
 ### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
@@ -117,7 +119,12 @@ src/background/service-worker.ts stub
 - `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
 - 사이트 우측 위젯(채팅/맨위로 버튼 등)과 겹칠 때 끄기용 — 사용성상 필요
 
-### F. 스포이드 (Eyedropper) — ✅ 완료/머지 (`69a5ca8`, impl claude_code / review codex 0 blocking)
+### F. 스포이드 (Eyedropper) — ⛔ 비활성 (`ad0af71`), 코드 보존
+- **비활성 사유**: 네이티브 크로뮴 `EyeDropper` API가 **색 채집 성공 직후 브라우저 창 전체를 얼림**(마우스 그랩 미해제로 추정, 닫기 버튼도 안 먹혀 강제 종료 필요). 확장 없는 맨 페이지 콘솔(`new EyeDropper().open()`)에서도 동일 재현 → 플랫폼/브라우저 버그, 우리 코드로 수정 불가.
+- **조치**: `registry.ts` FEATURES에서 항목 제거(툴바 버튼 사라짐). `eyedropper.tsx` / `wid:eyedropper` 타입 / `panel.tsx` 라우트·import는 그대로 보존.
+- **재구현 후보(추후)**: 네이티브 API 대신 `chrome.tabs.captureVisibleTab` 스크린샷 + 인페이지 돋보기/십자선 클릭 방식(OS 그랩 안 씀, freeze 원천 차단). manifest 권한 추가 필요.
+- 아래는 원래 v1 구현 기록(보존 코드 참고용):
+- 구현(비활성): 6번째 기능(label `E`, 현재 미노출). 네이티브 `EyeDropper` API로 화면 픽셀 채집, 패널에 스와치 + HEX(Copy) + RGB, 마지막 색 `chrome.storage.local`(`wid:eyedropper`) 지속
 - 구현: 6번째 기능(label `E`). 네이티브 크로뮴 `EyeDropper` API로 화면 픽셀 채집(1회성, Esc 취소 시 조용히 무시), 패널에 스와치 + HEX(Copy 버튼) + RGB 읽기용. 마지막 채집 색만 `chrome.storage.local`(`wid:eyedropper`)에 지속, mount 시 로드. feature-detect(미지원 시 버튼 disable+안내). strict 타입은 최소 ambient decl(`declare global`)로 처리(any 없음)
 - 구현 파일: `src/content/features/eyedropper.tsx` + `registry.ts`/`panel.tsx`/`rail.ts`/`types.ts`
 - 미확정(추후): 히스토리(여러 개) / rgb·hsl 토글 / 미지원 브라우저 fallback — 현재는 마지막 1개·HEX+RGB·fallback 없음
