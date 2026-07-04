@@ -57,6 +57,7 @@ src/background/service-worker.ts stub
 | panel-anchor | 확장 패널 **상단 고정**(top:10vh) → history 열면 아래로만 확장 | `afcba6e` |
 | history-format | 기록 행 = `계산식 결과` (왼쪽) ......... `시간` (오른쪽, 연회색) | `13c0fac` |
 | rail-pos | 시간색 진하게(`#94a3b8`), 레일 위치 `top:25%` 로 올림 | `8b51885` |
+| brush | 문서 전체 캔버스(스크롤 따라감, 휘발성) + 패널 툴바(HSV 컬러 휠+밝기 / 굵기 / 지우개 / 일괄 지우기 / 단축키 리바인드), `` ` ``(Backquote) hold-to-draw, stroke-object 지우개(획 일부만 닿아도 전체 삭제), pointer-events 통과 | `7acdce8` (impl claude_code / review codex) |
 | multi-search | 검색어 여러 행(+버튼으로 추가), 엔터/검색 버튼 실행, 검색어별 색 하이라이트(CSS Custom Highlight API), 행별 매치수 + × 삭제, 무상태(닫으면 하이라이트 제거) | `8122225` |
 
 ### 현재 동작 상태
@@ -79,7 +80,7 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-> **현재 기준 다음 작업 = C. Brush** (Multi-search는 완료/종료, 크로스노드 한계만 A안으로 남김)
+> **현재 기준 다음 작업 = B. Marker** (Brush 완료/머지 `7acdce8`, Multi-search 완료/종료)
 
 ### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
 - 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
@@ -93,10 +94,14 @@ src/background/service-worker.ts stub
 - **UI 주의**: 스크롤바에 직접 못 붙임(브라우저 차단) → 스크롤바 옆에 **미니맵 형태의 자체 레일**로 구현
 - **SPA 주의**: URL이 바뀌어도 리로드 안 되는 사이트(유튜브 등)에선 마커가 남을 수 있음 → history API 변경 감지해서 정리할지 추후 결정 (기본은 "휘발")
 
-### C. Brush — 휘발성 ← **다음 작업 1순위**
-- 페이지 위 자유 그리기 (canvas), 페이지 떠나면 소멸
-- brush 설정(색/굵기/단축키) 타입은 `wid:settings.brush` 에 이미 정의돼 있음
-- **시작 전 스펙 합의 필요**: 캔버스 범위(전체 화면 vs 보이는 영역), 툴바(색/굵기/지우개) 위치, 패널과의 상호작용(그리기 중 패널/레일 클릭 처리), 마우스 이벤트 통과 여부 등
+### C. Brush — ✅ 완료/머지 (`7acdce8`, impl claude_code / review codex 0 blocking)
+- 확정 스펙: 문서 전체 캔버스(스크롤 따라감), 휘발성(메모리만, 언로드 시 소멸)
+- 발동: 리바인드 가능한 키 hold(기본 `` ` `` Backquote, `event.code` 기준), 누르는 동안만 커서 브러시 + pointer-events 잡음, 평소 통과. 입력창/우리 shadow host 포커스 시 발동 안 함
+- 툴바(패널 안): HSV 컬러 휠 + 밝기 슬라이더 / 굵기 슬라이더 / 지우개 토글 / 일괄 지우기 / 단축키 리바인드
+- 지우개 = stroke-object(획 = points+color+width 벡터 객체, 지우개가 닿으면 획 전체 삭제 후 redraw)
+- 설정(색/굵기/키)만 `wid:settings.brush` 유지, 스키마 `brush.key` 를 modifier-only union → 임의 `KeyboardEvent.code` string 으로 확장
+- 구현 파일: `src/content/features/brush-engine.ts`(엔진/캔버스/스트로크) + `brush.tsx`(패널 툴바)
+- follow-up(비차단): shadow-root 내부 포커스 감지 보강 / 지우개 반경이 브러시 굵기 연동 / z-index 공유 상수화 / 휠 캔버스 DPR 미적용 / 브러시 off 스위치 없음 / `<html>` position:static 가정
 
 ### D. 레일 on/off 토글 (전역 + 사이트별)
 - `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
