@@ -57,6 +57,7 @@ src/background/service-worker.ts stub
 | panel-anchor | 확장 패널 **상단 고정**(top:10vh) → history 열면 아래로만 확장 | `afcba6e` |
 | history-format | 기록 행 = `계산식 결과` (왼쪽) ......... `시간` (오른쪽, 연회색) | `13c0fac` |
 | rail-pos | 시간색 진하게(`#94a3b8`), 레일 위치 `top:25%` 로 올림 | `8b51885` |
+| brush-ux | 그리기 모드 커서 링(브러시=굵기, 지우개=고정 24px) + 지우개 고정 반경(보이는 원=지워지는 범위) + 레일/패널 수직 드래그 이동(3핸들, 버튼은 클릭 유지, 빈 영역만 드래그) + 위치 전역 저장 `wid:settings.railTop` | `afcf1cf` (impl claude_code / review codex) |
 | brush | 문서 전체 캔버스(스크롤 따라감, 휘발성) + 패널 툴바(HSV 컬러 휠+밝기 / 굵기 / 지우개 / 일괄 지우기 / 단축키 리바인드), `` ` ``(Backquote) hold-to-draw, stroke-object 지우개(획 일부만 닿아도 전체 삭제), pointer-events 통과 | `7acdce8` (impl claude_code / review codex) |
 | multi-search | 검색어 여러 행(+버튼으로 추가), 엔터/검색 버튼 실행, 검색어별 색 하이라이트(CSS Custom Highlight API), 행별 매치수 + × 삭제, 무상태(닫으면 하이라이트 제거) | `8122225` |
 
@@ -101,7 +102,9 @@ src/background/service-worker.ts stub
 - 지우개 = stroke-object(획 = points+color+width 벡터 객체, 지우개가 닿으면 획 전체 삭제 후 redraw)
 - 설정(색/굵기/키)만 `wid:settings.brush` 유지, 스키마 `brush.key` 를 modifier-only union → 임의 `KeyboardEvent.code` string 으로 확장
 - 구현 파일: `src/content/features/brush-engine.ts`(엔진/캔버스/스트로크) + `brush.tsx`(패널 툴바)
-- follow-up(비차단): shadow-root 내부 포커스 감지 보강 / 지우개 반경이 브러시 굵기 연동 / z-index 공유 상수화 / 휠 캔버스 DPR 미적용 / 브러시 off 스위치 없음 / `<html>` position:static 가정
+- follow-up(비차단): shadow-root 내부 포커스 감지 보강 / z-index 공유 상수화 / 휠 캔버스 DPR 미적용 / 브러시 off 스위치 없음 / `<html>` position:static 가정
+- brush-ux(`afcf1cf`) 추가 개선: 커서 링(브러시=굵기/지우개=고정 24px), 지우개 고정 반경(ERASER_RADIUS=12, 보이는 원=지워지는 범위, 이전 "굵기 연동" follow-up 해소), 레일/패널 수직 드래그 이동(`rail-position.ts`, 3핸들, 버튼 클릭 보존, 4px 임계, 클램프, 드래그 종료 시만 영속)
+- brush-ux 추가 follow-up(비차단): 클릭 억제 `setTimeout(0)` 타이밍 의존 → 플래그화 / `persistRailTop` 설정 병합 deep-merge
 
 ### D. 레일 on/off 토글 (전역 + 사이트별)
 - `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
