@@ -52,7 +52,9 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       padding: 0;
       border: 0;
       border-radius: 6px 0 0 6px;
-      background: #1f2937;
+      background: rgba(100, 116, 139, 0.6);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
       cursor: pointer;
       touch-action: none;
     }
