@@ -1,4 +1,8 @@
-export type WidStorageKey = "wid:settings" | "wid:memo" | "wid:calc:history";
+export type WidStorageKey =
+  | "wid:settings"
+  | "wid:memo"
+  | "wid:calc:history"
+  | "wid:eyedropper";
 
 export type WidSettings = {
   railEnabled: boolean;
@@ -26,8 +30,14 @@ export type WidCalcHistoryItem = {
   at: number;
 };
 
+export type WidEyedropper = {
+  // Last picked color as an uppercase #RRGGBB string.
+  hex: string;
+};
+
 export type WidStorageSchema = {
   "wid:settings": WidSettings;
   "wid:memo": WidMemo;
   "wid:calc:history": WidCalcHistoryItem[];
+  "wid:eyedropper": WidEyedropper;
 };

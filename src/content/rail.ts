@@ -831,6 +831,103 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
+
+    .wid-eyedropper {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: #17202a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-eyedropper-pick {
+      flex: 0 0 auto;
+      align-self: flex-start;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      font: 600 13px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-eyedropper-pick:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+
+    .wid-eyedropper-pick:disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
+
+    .wid-eyedropper-note {
+      margin: 0;
+      color: #94a3b8;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-eyedropper-result {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wid-eyedropper-swatch {
+      flex: 0 0 auto;
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      border: 1px solid rgba(15, 23, 42, 0.2);
+    }
+
+    .wid-eyedropper-codes {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .wid-eyedropper-hex-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wid-eyedropper-hex {
+      color: #0f172a;
+      font: 600 14px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .wid-eyedropper-copy {
+      flex: 0 0 auto;
+      padding: 4px 10px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #334155;
+      font: 600 11px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-eyedropper-copy:hover {
+      background: #e8eef7;
+    }
+
+    .wid-eyedropper-rgb {
+      color: #64748b;
+      font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .wid-eyedropper-pick:focus-visible,
+    .wid-eyedropper-copy:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
   `;
 
   const root = document.createElement("div");

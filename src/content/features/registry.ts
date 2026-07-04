@@ -3,7 +3,8 @@ export type WidFeatureName =
   | "Brush"
   | "Memo"
   | "Calculator"
-  | "Multi-search";
+  | "Multi-search"
+  | "Eyedropper";
 
 export type WidFeature = {
   name: WidFeatureName;
@@ -15,5 +16,6 @@ export const FEATURES: WidFeature[] = [
   { name: "Brush", label: "B" },
   { name: "Memo", label: "N" },
   { name: "Calculator", label: "C" },
-  { name: "Multi-search", label: "S" }
+  { name: "Multi-search", label: "S" },
+  { name: "Eyedropper", label: "E" }
 ];
