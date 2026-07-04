@@ -1,12 +1,11 @@
 export type WidStorageKey = "wid:settings" | "wid:memo" | "wid:calc:history";
 
-export type WidBrushKey = "Alt" | "Ctrl" | "Shift" | "Meta";
-
 export type WidSettings = {
   railEnabled: boolean;
   disabledHosts: string[];
   brush: {
-    key: WidBrushKey;
+    // A KeyboardEvent.code (e.g. "Backquote", "KeyB"). Held to activate drawing.
+    key: string;
     color: string;
     width: number;
   };

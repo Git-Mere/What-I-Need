@@ -1,0 +1,413 @@
+import { getStorageValue, setStorageValue } from "../../shared/storage";
+import type { WidSettings } from "../../shared/types";
+
+export type BrushSettings = {
+  key: string;
+  color: string;
+  width: number;
+};
+
+// Defaults live here so the toolbar and engine agree on a single source.
+export const DEFAULT_BRUSH: BrushSettings = {
+  key: "Backquote",
+  color: "#e53935",
+  width: 4
+};
+
+// Used only when no settings object exists yet, so writing brush settings does
+// not clobber the (as-yet unimplemented) rail on/off fields.
+const DEFAULT_SETTINGS: WidSettings = {
+  railEnabled: true,
+  disabledHosts: [],
+  brush: { ...DEFAULT_BRUSH }
+};
+
+type Point = { x: number; y: number };
+type Stroke = { points: Point[]; color: string; width: number };
+
+const CANVAS_ID = "wid-brush-canvas";
+const SHADOW_HOST_ID = "wid-shadow-host";
+// One below the rail's z-index (2147483647) so drawings never cover the WID UI.
+const CANVAS_Z_INDEX = "2147483646";
+
+// The activation key must not fire while the user is typing. Focus inside the
+// WID Shadow DOM UI resolves to the host element from the top document, so we
+// treat any focus within it (memo/search inputs, the rebind button) as typing.
+function isTypingContext(): boolean {
+  const active = document.activeElement as HTMLElement | null;
+  if (!active) {
+    return false;
+  }
+  if (active.id === SHADOW_HOST_ID) {
+    return true;
+  }
+  const tag = active.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+    return true;
+  }
+  return active.isContentEditable;
+}
+
+// Full scrollable document size (not just the viewport).
+function documentSize(): { width: number; height: number } {
+  const doc = document.documentElement;
+  const body = document.body;
+  const width = Math.max(
+    doc.scrollWidth,
+    doc.clientWidth,
+    body ? body.scrollWidth : 0,
+    body ? body.offsetWidth : 0
+  );
+  const height = Math.max(
+    doc.scrollHeight,
+    doc.clientHeight,
+    body ? body.scrollHeight : 0,
+    body ? body.offsetHeight : 0
+  );
+  return { width, height };
+}
+
+// Shortest distance from point p to segment a->b (for object-level erasing).
+function distanceToSegment(p: Point, a: Point, b: Point): number {
+  const abx = b.x - a.x;
+  const aby = b.y - a.y;
+  const lenSq = abx * abx + aby * aby;
+  if (lenSq === 0) {
+    return Math.hypot(p.x - a.x, p.y - a.y);
+  }
+  let t = ((p.x - a.x) * abx + (p.y - a.y) * aby) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * abx), p.y - (a.y + t * aby));
+}
+
+// True if the eraser at `point` (radius `reach`) touches any part of the stroke.
+function strokeHit(stroke: Stroke, point: Point, eraserRadius: number): boolean {
+  const reach = eraserRadius + stroke.width / 2;
+  const pts = stroke.points;
+  if (pts.length === 1) {
+    return Math.hypot(point.x - pts[0].x, point.y - pts[0].y) <= reach;
+  }
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    if (distanceToSegment(point, pts[i], pts[i + 1]) <= reach) {
+      return true;
+    }
+  }
+  return false;
+}
+
+class BrushEngine {
+  private canvas: HTMLCanvasElement | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
+  // Vector stroke objects. Volatile: memory only, never persisted.
+  private strokes: Stroke[] = [];
+  private current: Stroke | null = null;
+  private dpr = 1;
+  private cssWidth = 0;
+  private cssHeight = 0;
+  private held = false;
+  private drawing = false;
+  private syncRaf: number | null = null;
+
+  settings: BrushSettings = { ...DEFAULT_BRUSH };
+  eraser = false;
+  ready: Promise<void>;
+
+  constructor() {
+    this.ready = this.init();
+  }
+
+  private async init(): Promise<void> {
+    const stored = await getStorageValue("wid:settings");
+    if (stored?.brush) {
+      this.settings = {
+        key: stored.brush.key || DEFAULT_BRUSH.key,
+        color: stored.brush.color || DEFAULT_BRUSH.color,
+        width: stored.brush.width || DEFAULT_BRUSH.width
+      };
+    }
+    this.mountCanvas();
+    this.attachListeners();
+  }
+
+  private mountCanvas(): void {
+    const canvas = document.createElement("canvas");
+    canvas.id = CANVAS_ID;
+    const s = canvas.style;
+    s.position = "absolute";
+    s.top = "0";
+    s.left = "0";
+    s.zIndex = CANVAS_Z_INDEX;
+    s.pointerEvents = "none";
+    s.touchAction = "none";
+    // Sibling of the Shadow DOM host under <html>; scrolls with the page.
+    document.documentElement.append(canvas);
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.syncSize();
+    this.applyHeldStyle();
+
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("pointermove", this.onPointerMove);
+    canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("pointercancel", this.onPointerUp);
+  }
+
+  private attachListeners(): void {
+    // Capture phase so a page that stops keydown propagation cannot hide it.
+    window.addEventListener("keydown", this.onKeyDown, true);
+    window.addEventListener("keyup", this.onKeyUp, true);
+    window.addEventListener("blur", this.onBlur);
+    window.addEventListener("resize", this.requestSync);
+    const observer = new ResizeObserver(this.requestSync);
+    observer.observe(document.documentElement);
+    if (document.body) {
+      observer.observe(document.body);
+    }
+  }
+
+  private requestSync = (): void => {
+    if (this.syncRaf !== null) {
+      return;
+    }
+    this.syncRaf = requestAnimationFrame(() => {
+      this.syncRaf = null;
+      this.syncSize();
+    });
+  };
+
+  // Resize the canvas to the document without losing existing strokes.
+  private syncSize(): void {
+    if (!this.canvas || !this.ctx) {
+      return;
+    }
+    const { width, height } = documentSize();
+    const dpr = window.devicePixelRatio || 1;
+    if (width === this.cssWidth && height === this.cssHeight && dpr === this.dpr) {
+      return;
+    }
+    this.cssWidth = width;
+    this.cssHeight = height;
+    this.dpr = dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+    // Backing store scaled for crisp lines; changing width/height clears it.
+    this.canvas.width = Math.round(width * dpr);
+    this.canvas.height = Math.round(height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.redrawAll();
+  }
+
+  // Canvas origin sits at document (0,0), so page coords = client + scroll.
+  private toPagePoint(event: PointerEvent): Point {
+    return { x: event.clientX + window.scrollX, y: event.clientY + window.scrollY };
+  }
+
+  private onPointerDown = (event: PointerEvent): void => {
+    if (!this.held || !this.canvas) {
+      return;
+    }
+    event.preventDefault();
+    this.canvas.setPointerCapture(event.pointerId);
+    this.drawing = true;
+    const point = this.toPagePoint(event);
+    if (this.eraser) {
+      this.eraseAt(point);
+      return;
+    }
+    this.current = {
+      points: [point],
+      color: this.settings.color,
+      width: this.settings.width
+    };
+    this.drawStroke(this.current);
+  };
+
+  private onPointerMove = (event: PointerEvent): void => {
+    if (!this.drawing || !this.ctx) {
+      return;
+    }
+    const point = this.toPagePoint(event);
+    if (this.eraser) {
+      this.eraseAt(point);
+      return;
+    }
+    if (!this.current) {
+      return;
+    }
+    const prev = this.current.points[this.current.points.length - 1];
+    this.current.points.push(point);
+    // Draw only the new segment to stay cheap on long pages.
+    this.drawSegment(prev, point, this.current.color, this.current.width);
+  };
+
+  private onPointerUp = (event: PointerEvent): void => {
+    if (!this.drawing) {
+      return;
+    }
+    this.finishStroke();
+    if (this.canvas?.hasPointerCapture(event.pointerId)) {
+      this.canvas.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  private finishStroke(): void {
+    this.drawing = false;
+    if (this.current) {
+      if (this.current.points.length > 0) {
+        this.strokes.push(this.current);
+      }
+      this.current = null;
+    }
+  }
+
+  // Object-level eraser: any stroke the eraser touches is removed whole.
+  private eraseAt(point: Point): void {
+    const radius = Math.max(this.settings.width, 8) / 2 + 2;
+    const before = this.strokes.length;
+    this.strokes = this.strokes.filter((stroke) => !strokeHit(stroke, point, radius));
+    if (this.strokes.length !== before) {
+      this.redrawAll();
+    }
+  }
+
+  private stylize(color: string, width: number): void {
+    if (!this.ctx) {
+      return;
+    }
+    this.ctx.strokeStyle = color;
+    this.ctx.fillStyle = color;
+    this.ctx.lineWidth = width;
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
+  }
+
+  private drawSegment(a: Point, b: Point, color: string, width: number): void {
+    if (!this.ctx) {
+      return;
+    }
+    this.stylize(color, width);
+    this.ctx.beginPath();
+    this.ctx.moveTo(a.x, a.y);
+    this.ctx.lineTo(b.x, b.y);
+    this.ctx.stroke();
+  }
+
+  private drawStroke(stroke: Stroke): void {
+    if (!this.ctx) {
+      return;
+    }
+    const pts = stroke.points;
+    if (pts.length === 1) {
+      // A tap renders as a filled dot.
+      this.ctx.fillStyle = stroke.color;
+      this.ctx.beginPath();
+      this.ctx.arc(pts[0].x, pts[0].y, stroke.width / 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      return;
+    }
+    this.stylize(stroke.color, stroke.width);
+    this.ctx.beginPath();
+    this.ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i += 1) {
+      this.ctx.lineTo(pts[i].x, pts[i].y);
+    }
+    this.ctx.stroke();
+  }
+
+  private redrawAll(): void {
+    if (!this.ctx) {
+      return;
+    }
+    this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
+    for (const stroke of this.strokes) {
+      this.drawStroke(stroke);
+    }
+    if (this.current) {
+      this.drawStroke(this.current);
+    }
+  }
+
+  private onKeyDown = (event: KeyboardEvent): void => {
+    if (event.code !== this.settings.key || event.repeat) {
+      return;
+    }
+    if (isTypingContext()) {
+      return;
+    }
+    this.setHeld(true);
+  };
+
+  private onKeyUp = (event: KeyboardEvent): void => {
+    if (event.code !== this.settings.key) {
+      return;
+    }
+    this.setHeld(false);
+  };
+
+  // A tab switch / window blur can swallow the keyup, leaving the key "stuck".
+  private onBlur = (): void => {
+    this.setHeld(false);
+  };
+
+  private setHeld(next: boolean): void {
+    if (next === this.held) {
+      return;
+    }
+    this.held = next;
+    this.applyHeldStyle();
+    // Releasing the key mid-drag finishes the current stroke.
+    if (!next && this.drawing) {
+      this.finishStroke();
+    }
+  }
+
+  private applyHeldStyle(): void {
+    if (!this.canvas) {
+      return;
+    }
+    this.canvas.style.pointerEvents = this.held ? "auto" : "none";
+    this.canvas.style.cursor = this.held ? "crosshair" : "";
+  }
+
+  private async persist(): Promise<void> {
+    const stored = await getStorageValue("wid:settings");
+    const base = stored ?? DEFAULT_SETTINGS;
+    await setStorageValue("wid:settings", { ...base, brush: { ...this.settings } });
+  }
+
+  setColor(color: string): void {
+    this.settings.color = color;
+    void this.persist();
+  }
+
+  setWidth(width: number): void {
+    this.settings.width = width;
+    void this.persist();
+  }
+
+  setKey(key: string): void {
+    this.settings.key = key;
+    void this.persist();
+  }
+
+  setEraser(on: boolean): void {
+    this.eraser = on;
+  }
+
+  clearAll(): void {
+    this.strokes = [];
+    this.current = null;
+    this.redrawAll();
+  }
+}
+
+let engine: BrushEngine | null = null;
+
+// Lazily created on first use (Brush tab open). Persists for the page lifetime
+// so drawing stays available after the panel closes; strokes vanish on unload.
+export function getBrushEngine(): BrushEngine {
+  if (!engine) {
+    engine = new BrushEngine();
+  }
+  return engine;
+}

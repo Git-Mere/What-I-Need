@@ -2,6 +2,7 @@ import { render } from "preact";
 import { useState } from "preact/hooks";
 
 import { FEATURES, type WidFeatureName } from "./registry";
+import { Brush } from "./brush";
 import { Calculator } from "./calc";
 import { Memo } from "./memo";
 import { Search } from "./search";
@@ -12,6 +13,10 @@ type PanelProps = {
 };
 
 function FeatureContent({ feature }: { feature: WidFeatureName }) {
+  if (feature === "Brush") {
+    return <Brush />;
+  }
+
   if (feature === "Memo") {
     return <Memo />;
   }

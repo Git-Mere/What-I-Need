@@ -510,6 +510,158 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       color: #64748b;
       font: 400 13px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
+    .wid-brush {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: #17202a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-brush-wheel-wrap {
+      position: relative;
+      flex: 0 0 auto;
+      border-radius: 50%;
+    }
+
+    .wid-brush-wheel {
+      display: block;
+      border-radius: 50%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .wid-brush-wheel-dim {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: #000000;
+      pointer-events: none;
+    }
+
+    .wid-brush-wheel-marker {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.6);
+      pointer-events: none;
+    }
+
+    .wid-brush-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      color: #475569;
+      font: 500 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-brush-field > span:first-child {
+      flex: 0 0 68px;
+    }
+
+    .wid-brush-field input[type="range"] {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .wid-brush-width-value {
+      flex: 0 0 auto;
+      min-width: 20px;
+      text-align: right;
+      color: #64748b;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wid-brush-preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .wid-brush-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(15, 23, 42, 0.2);
+    }
+
+    .wid-brush-color-text {
+      color: #64748b;
+      font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      text-transform: uppercase;
+    }
+
+    .wid-brush-actions {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .wid-brush-btn {
+      flex: 1 1 auto;
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #334155;
+      font: 600 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-brush-btn:hover {
+      background: #e8eef7;
+    }
+
+    .wid-brush-btn[data-active="true"] {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .wid-brush-key {
+      flex: 1 1 auto;
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #17202a;
+      font: 600 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-brush-key:hover {
+      background: #e8eef7;
+    }
+
+    .wid-brush-key[data-capturing="true"] {
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .wid-brush-hint {
+      margin: 0;
+      width: 100%;
+      color: #94a3b8;
+      font: 400 11px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-brush-btn:focus-visible,
+    .wid-brush-key:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
   `;
 
   const root = document.createElement("div");
