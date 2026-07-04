@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import {
   getStorageValue,
@@ -17,6 +17,8 @@ type CalcState = {
   pendingOperator: BinaryOperator | null;
   waitingForEntry: boolean;
   error: CalcError | null;
+  lastOperator: BinaryOperator | null;
+  lastOperand: number | null;
 };
 
 const INITIAL_STATE: CalcState = {
@@ -24,7 +26,9 @@ const INITIAL_STATE: CalcState = {
   storedValue: null,
   pendingOperator: null,
   waitingForEntry: false,
-  error: null
+  error: null,
+  lastOperator: null,
+  lastOperand: null
 };
 
 const MAX_HISTORY_ITEMS = 10;
@@ -51,7 +55,8 @@ function formatNumber(value: number): string {
   const abs = Math.abs(rounded);
 
   if (abs >= 1e12 || abs < 1e-9) {
-    return trimFormatted(rounded.toExponential(8).replace("e+", "e"));
+    const [mantissa, exponent] = rounded.toExponential(8).split("e");
+    return `${trimFormatted(mantissa)}e${exponent}`;
   }
 
   return trimFormatted(rounded.toString());
@@ -92,6 +97,7 @@ export function Calculator() {
   const [state, setState] = useState<CalcState>(INITIAL_STATE);
   const [history, setHistory] = useState<WidCalcHistoryItem[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const historyLoaded = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -101,6 +107,7 @@ export function Calculator() {
         return;
       }
       setHistory(items ?? []);
+      historyLoaded.current = true;
     });
 
     return () => {
@@ -108,17 +115,26 @@ export function Calculator() {
     };
   }, []);
 
+  // Persist history as a side-effect of state changes, keeping the state
+  // updaters pure. Skipped until the initial load has run so the stored
+  // value is not clobbered before it is read.
+  useEffect(() => {
+    if (!historyLoaded.current) {
+      return;
+    }
+    if (history.length === 0) {
+      void removeStorageValue("wid:calc:history");
+    } else {
+      void setStorageValue("wid:calc:history", history);
+    }
+  }, [history]);
+
   const persistHistoryItem = (item: WidCalcHistoryItem) => {
-    setHistory((current) => {
-      const next = [...current, item].slice(-MAX_HISTORY_ITEMS);
-      void setStorageValue("wid:calc:history", next);
-      return next;
-    });
+    setHistory((current) => [...current, item].slice(-MAX_HISTORY_ITEMS));
   };
 
   const clearHistory = () => {
     setHistory([]);
-    void removeStorageValue("wid:calc:history");
   };
 
   const clearAll = () => {
@@ -170,6 +186,10 @@ export function Calculator() {
         return current;
       }
 
+      if (current.display.replace("-", "").replace(".", "").length >= MAX_INPUT_LENGTH) {
+        return current;
+      }
+
       return { ...current, display: `${current.display}.` };
     });
   };
@@ -190,10 +210,13 @@ export function Calculator() {
 
   const toggleSign = () => {
     setState((current) => {
-      if (current.error !== null || current.display === "0") {
+      if (current.error !== null || toNumber(current.display) === 0) {
         return current;
       }
 
+      // Sign toggle never starts a new entry: preserve waitingForEntry so a
+      // shown result/operand is negated in place while the next digit still
+      // replaces it rather than appending.
       return {
         ...current,
         display: current.display.startsWith("-")
@@ -213,9 +236,9 @@ export function Calculator() {
       const next =
         current.storedValue !== null && current.pendingOperator !== null
           ? current.storedValue * (value / 100)
-          : value / 100;
+          : 0;
 
-      return { ...current, display: formatNumber(next), waitingForEntry: false };
+      return { ...current, display: formatNumber(next), waitingForEntry: true };
     });
   };
 
@@ -259,6 +282,7 @@ export function Calculator() {
         }
 
         return {
+          ...current,
           display: formatNumber(result.value),
           storedValue: result.value,
           pendingOperator: operator,
@@ -277,36 +301,50 @@ export function Calculator() {
   };
 
   const evaluate = () => {
-    setState((current) => {
-      if (
-        current.error !== null ||
-        current.pendingOperator === null ||
-        current.storedValue === null
-      ) {
-        return current;
-      }
+    if (state.error !== null) {
+      return;
+    }
 
-      const right = toNumber(current.display);
-      const result = applyBinary(current.storedValue, current.pendingOperator, right);
-      if (result.error !== null) {
-        return { ...current, display: result.error, error: result.error };
-      }
+    // Determine the operation to run: an explicit pending operation, or (for a
+    // repeated "=") the last operator + operand applied to the current display.
+    let left: number;
+    let operator: BinaryOperator;
+    let right: number;
 
-      const formattedResult = formatNumber(result.value);
-      const item = {
-        expr: `${formatOperand(current.storedValue)} ${current.pendingOperator} ${formatOperand(right)} =`,
-        result: formattedResult,
-        at: Date.now()
-      };
-      persistHistoryItem(item);
+    if (state.pendingOperator !== null && state.storedValue !== null) {
+      left = state.storedValue;
+      operator = state.pendingOperator;
+      right = toNumber(state.display);
+    } else if (state.lastOperator !== null && state.lastOperand !== null) {
+      left = toNumber(state.display);
+      operator = state.lastOperator;
+      right = state.lastOperand;
+    } else {
+      return;
+    }
 
-      return {
-        display: formattedResult,
-        storedValue: null,
-        pendingOperator: null,
-        waitingForEntry: true,
-        error: null
-      };
+    const result = applyBinary(left, operator, right);
+    if (result.error !== null) {
+      setState({ ...state, display: result.error, error: result.error });
+      return;
+    }
+
+    const formattedResult = formatNumber(result.value);
+    persistHistoryItem({
+      expr: `${formatOperand(left)} ${operator} ${formatOperand(right)} =`,
+      result: formattedResult,
+      at: Date.now()
+    });
+
+    setState({
+      ...state,
+      display: formattedResult,
+      storedValue: null,
+      pendingOperator: null,
+      waitingForEntry: true,
+      error: null,
+      lastOperator: operator,
+      lastOperand: right
     });
   };
 
