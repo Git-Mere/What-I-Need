@@ -87,7 +87,17 @@ src/background/service-worker.ts stub
 
 > **현재 활성 기능 = 5종 + Help**: Marker `619d534`+v2 `abc0453`, Brush·brush-ux `afcf1cf`, Memo/Calc, Multi-search, Help `ad0af71`.
 > **Eyedropper는 비활성**(`ad0af71`): 네이티브 크로뮴 `EyeDropper` API가 색 채집 성공 직후 브라우저 전체를 얼리는 플랫폼 버그(맨 페이지에서도 재현) → FEATURES에서 제거, 코드/타입/라우트는 보존(추후 스크린샷 기반 자체 스포이드로 재구현 후보).
-> 다음 후보(미확정, 사용자 확인 필요): **D. 레일 on/off 토글**(전역+사이트별) — 아래 D 항목 참고. 그 외 §7 follow-up들.
+> **모든 기능 + 자잘한 버그 정리 완료** (§7 참고). 브러시 follow-up·검색 인라인태그 한계·D 레일토글은 전부 종료/제외.
+>
+> ## ⏭️ 다음 세션 계획 (사용자 지정, **작업 전담 = codex**; claude_code 토큰 부족)
+> 순서대로 진행하고, 각 단계는 codex 구현 → 교차리뷰(다른 벤더 가능 시)로.
+> 1. **언어 분리 (i18n)**: 확장을 **한글판 / 영어판 2종**으로 낸다. 현재 UI 문구가 한/영 섞여 있음(마커·스포이드는 영어, 메모/헬프 등은 한국어). 언어별 문자열을 분리하는 구조 도입(예: locale 상수/맵 또는 chrome.i18n `_locales/`) 후 두 빌드/버전 산출. **세부 방식(빌드 분리 vs 런타임 토글, chrome.i18n 사용 여부)은 착수 시 사용자와 확정 필요.**
+> 2. **아이콘 교체**: 현재 레일 버튼이 문자 라벨(M/B/N/C/S/?)로 나옴 → **사용자가 아이콘 파일 제공 예정**. 제공받은 아이콘을 각 기능 버튼에 넣는다. `registry.ts`의 `label` 구조를 아이콘(에셋 경로/인라인 SVG) 지원하도록 확장 + `rail.ts` 버튼 렌더링 수정. (아이콘 파일 수령 후 착수)
+> 3. **전체 코드 리뷰**: 위 2개 끝난 뒤 프로젝트 전체를 종합 코드 리뷰.
+>
+> ### (참고) 이전 후보 — 제외/보류
+> - **D. 레일 on/off 토글**: ❌ 계획 제외(사용자 결정).
+> - **Eyedropper 재구현**(스크린샷 기반): 보류(원하면 나중에).
 
 ### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
 - 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
@@ -111,9 +121,8 @@ src/background/service-worker.ts stub
 - 지우개 = stroke-object(획 = points+color+width 벡터 객체, 지우개가 닿으면 획 전체 삭제 후 redraw)
 - 설정(색/굵기/키)만 `wid:settings.brush` 유지, 스키마 `brush.key` 를 modifier-only union → 임의 `KeyboardEvent.code` string 으로 확장
 - 구현 파일: `src/content/features/brush-engine.ts`(엔진/캔버스/스트로크) + `brush.tsx`(패널 툴바)
-- follow-up(비차단): shadow-root 내부 포커스 감지 보강 / z-index 공유 상수화 / 휠 캔버스 DPR 미적용 / 브러시 off 스위치 없음 / `<html>` position:static 가정
 - brush-ux(`afcf1cf`) 추가 개선: 커서 링(브러시=굵기/지우개=고정 24px), 지우개 고정 반경(ERASER_RADIUS=12, 보이는 원=지워지는 범위, 이전 "굵기 연동" follow-up 해소), 레일/패널 수직 드래그 이동(`rail-position.ts`, 3핸들, 버튼 클릭 보존, 4px 임계, 클램프, 드래그 종료 시만 영속)
-- brush-ux 추가 follow-up(비차단): 클릭 억제 `setTimeout(0)` 타이밍 의존 → 플래그화 / `persistRailTop` 설정 병합 deep-merge
+- **브러시 follow-up 전부 종료 (사용자 결정, 더 손 안 댐)**: shadow-root 포커스 감지 보강 / z-index 상수화 / 휠 DPR / off 스위치 / `<html>` static 가정 / 클릭 억제 setTimeout 플래그화 / persistRailTop deep-merge — 모두 착수 안 함, closed.
 
 ### D. 레일 on/off 토글 (전역 + 사이트별) — ❌ 계획에서 제외 (사용자 결정, 불필요)
 - (참고) `wid:settings.railEnabled`, `disabledHosts` 타입은 존재하나 구현 안 함
@@ -148,7 +157,7 @@ src/background/service-worker.ts stub
 - [x] **숨김 노드 검색 제외** (`a8f6d02`) — acceptNode에서 `getComputedStyle(parent).visibility` hidden/collapse 제외 + 텍스트 노드 Range `getClientRects().length===0` 제외. 버전 무관(105+), display:none/visibility:hidden/hidden속성/content-visibility 제외, display:contents+보이는텍스트는 포함.
 - [x] **IME 조합 중 Enter 무시** (`4e6e7e0`) — `Enter && !event.isComposing`.
 - [x] **detach 노드 scrollIntoView 가드** (`4e6e7e0`) — target이 Element일 때만 호출, 아니면 no-op.
-- [ ] **알려진 한계(A안으로 출시)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음. 예: `가격은 <b>10,000</b>원` 에서 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰, 링크/볼드가 단어 중간에 낀 구절. 단일 단어의 일반 본문 검색은 정상. 필요하면 크로스-노드 Range 병합으로 개선(B안).
+- [~] **알려진 한계 — ❌ 수정 안 함(의도적으로 버림, 사용자 결정)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음(예: `가격은 <b>10,000</b>원`의 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰). 단일 단어의 일반 본문 검색은 정상 → 그대로 둠. (B안 크로스-노드 Range 병합 착수 안 함)
 - [x] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능. — 해결(`b33b6bd`)
 - [x] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전 — 해결(`b33b6bd`)
 
