@@ -58,7 +58,8 @@ src/background/service-worker.ts stub
 | history-format | 기록 행 = `계산식 결과` (왼쪽) ......... `시간` (오른쪽, 연회색) | `13c0fac` |
 | rail-pos | 시간색 진하게(`#94a3b8`), 레일 위치 `top:25%` 로 올림 | `8b51885` |
 | brush-ux | 그리기 모드 커서 링(브러시=굵기, 지우개=고정 24px) + 지우개 고정 반경(보이는 원=지워지는 범위) + 레일/패널 수직 드래그 이동(3핸들, 버튼은 클릭 유지, 빈 영역만 드래그) + 위치 전역 저장 `wid:settings.railTop` | `afcf1cf` (impl claude_code / review codex) |
-| marker | 스크롤 위치 북마크 패널(휘발성, 최대 10개): `+ 마커 추가`로 현재 스크롤 저장, 목록(마커 N + %) 클릭 시 이동, 행별 × 삭제 | `619d534` (impl claude_code / review codex) |
+| marker | 스크롤 위치 북마크 패널(휘발성, 최대 10개): 현재 스크롤 저장, 목록(Mark N + %) 클릭 시 이동, 행별 × 삭제 + rename(✎) | `619d534` / v2 `abc0453` (impl claude_code / review codex) |
+| toolbar-color | 레일 바 배경 반투명 슬레이트(`rgba(100,116,139,0.6)` + backdrop blur) — 밝은/어두운 배경 모두 가시 | `94d0d92` (impl codex / review claude_code) |
 | brush | 문서 전체 캔버스(스크롤 따라감, 휘발성) + 패널 툴바(HSV 컬러 휠+밝기 / 굵기 / 지우개 / 일괄 지우기 / 단축키 리바인드), `` ` ``(Backquote) hold-to-draw, stroke-object 지우개(획 일부만 닿아도 전체 삭제), pointer-events 통과 | `7acdce8` (impl claude_code / review codex) |
 | multi-search | 검색어 여러 행(+버튼으로 추가), 엔터/검색 버튼 실행, 검색어별 색 하이라이트(CSS Custom Highlight API), 행별 매치수 + × 삭제, 무상태(닫으면 하이라이트 제거) | `8122225` |
 
@@ -97,7 +98,8 @@ src/background/service-worker.ts stub
 - 패널 리스트 방식으로 구현 (초기 "미니맵 레일" 아이디어 대신 사용자 확정 스펙): 패널에 `+ 마커 추가` 버튼 → 현재 `window.scrollY` 저장. 목록에 `마커 N` + 전체 스크롤 높이 대비 `%` 표시, 항목 클릭 시 `scrollTo({behavior:'smooth'})`로 이동, 행별 `×` 삭제, **최대 10개**(도달 시 add disabled)
 - 구현 파일: `src/content/features/marker.tsx`(Preact state, 저장소 없음) + `panel.tsx` 라우팅 + `rail.ts` `.wid-marker*` CSS. `registry.ts`의 `Marker`/`M` 엔트리는 기존에 있어 그대로 사용
 - %는 `scrollY / (scrollHeight - innerHeight)` 렌더 시 계산, unscrollable 페이지 0% 가드 + [0,100] 클램프
-- 미확정(추후 피드백): UI 문구 한국어 유지 vs 영어 통일 / SPA URL 변경 시 정리 여부(현재는 "휘발")
+- v2(`abc0453`/merge `ddd276b`, impl claude_code / review codex): **UI 문구 영어화**(`+ Add mark` / `Max 10` / `Mark N` 등) + **마커 rename**(행별 ✎ 버튼 → 인라인 input, Enter/blur 커밋, Esc 취소, 빈값이면 기본 `Mark N` 복귀; `name` 필드가 라벨 구동 → 삭제해도 재번호 안 됨, monotonic id=기본 번호; rename 중엔 goto 버튼을 input으로 교체해 클릭 스크롤 방지)
+- 미확정(추후): SPA URL 변경 시 정리 여부(현재는 "휘발")
 
 ### C. Brush — ✅ 완료/머지 (`7acdce8`, impl claude_code / review codex 0 blocking)
 - 확정 스펙: 문서 전체 캔버스(스크롤 따라감), 휘발성(메모리만, 언로드 시 소멸)
