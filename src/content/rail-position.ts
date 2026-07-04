@@ -42,7 +42,7 @@ export function occupiedPanelHeight(panelEl: HTMLElement): number {
 }
 
 // Paint a position by setting the shared CSS variable (inherited by the rail and
-// both nested .wid-expanded panels, so they stay in lockstep).
+// the mounted .wid-expanded panel, so they stay in lockstep).
 export function applyTop(root: HTMLElement, px: number): void {
   applied = px;
   root.style.setProperty("--wid-rail-top", `${px}px`);

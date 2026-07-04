@@ -1032,8 +1032,10 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     panel.append(button);
   }
 
+  // Plain mount host for the panel. The styled/positioned panel is the inner
+  // Preact .wid-expanded rendered into this by mountPanel; keeping the class on
+  // only the inner element avoids a redundant duplicate .wid-expanded box.
   const expanded = document.createElement("div");
-  expanded.className = "wid-expanded";
 
   shell.append(tab, panel);
   root.append(shell, expanded);
