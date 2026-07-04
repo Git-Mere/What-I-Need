@@ -189,8 +189,8 @@ function scrollRangeIntoView(range: Range): void {
   // Element has scrollIntoView, so skip when we can't resolve one.
   const container = range.startContainer;
   const target =
-    container.nodeType === Node.ELEMENT_NODE
-      ? (container as Element)
+    container instanceof Element
+      ? container
       : container.parentElement;
   if (target instanceof Element) {
     target.scrollIntoView({ block: "center", inline: "nearest" });
@@ -232,8 +232,7 @@ export function Search() {
     };
   }, []);
 
-  // Runs the search, refreshes counts/ranges, and resets the active match.
-  const runSearchFor = (nextRows: SearchRow[]) => {
+  const applySearchToRows = (nextRows: SearchRow[]) => {
     const { counts, ranges } = applySearch(nextRows.map((row) => row.term));
     const map = new Map<number, Range[]>();
     nextRows.forEach((row, index) => {
@@ -241,7 +240,12 @@ export function Search() {
     });
     rangesRef.current = map;
     setActive(null);
-    setRows(nextRows.map((row, index) => ({ ...row, count: counts[index] ?? null })));
+    return nextRows.map((row, index) => ({ ...row, count: counts[index] ?? null }));
+  };
+
+  // Runs the search, refreshes counts/ranges, and resets the active match.
+  const runSearchFor = (nextRows: SearchRow[]) => {
+    setRows(() => applySearchToRows(nextRows));
   };
 
   // Re-run every row DEBOUNCE_MS after the last keystroke, reading the latest
@@ -271,13 +275,21 @@ export function Search() {
   };
 
   const removeRow = (id: number) => {
-    if (rows.length <= 1) {
+    let nextRows: SearchRow[] | null = null;
+    setRows((current) => {
+      if (current.length <= 1) {
+        return current;
+      }
+      nextRows = current.filter((row) => row.id !== id);
+      return current;
+    });
+    if (!nextRows) {
       return;
     }
     // Re-run so highlights and colors follow the new row order. Drop any
     // pending debounce so it can't fire against the old row set.
     clearPending();
-    runSearchFor(rows.filter((row) => row.id !== id));
+    runSearchFor(nextRows);
   };
 
   // Move the single active match within a row (direction 1 = next, -1 = prev),
