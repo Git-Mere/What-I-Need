@@ -11,6 +11,7 @@ import {
 import { FEATURES, type WidFeatureName } from "./registry";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
+import { Marker } from "./marker";
 import { Memo } from "./memo";
 import { Search } from "./search";
 
@@ -20,6 +21,10 @@ type PanelProps = {
 };
 
 function FeatureContent({ feature }: { feature: WidFeatureName }) {
+  if (feature === "Marker") {
+    return <Marker />;
+  }
+
   if (feature === "Brush") {
     return <Brush />;
   }

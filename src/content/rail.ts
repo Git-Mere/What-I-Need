@@ -516,6 +516,124 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       outline-offset: 2px;
     }
 
+    .wid-marker {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: #17202a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-marker-add {
+      flex: 0 0 auto;
+      align-self: flex-start;
+      padding: 6px 10px;
+      border: 1px dashed rgba(15, 23, 42, 0.28);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #334155;
+      font: 500 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-marker-add:hover:not(:disabled) {
+      background: #f1f5f9;
+    }
+
+    .wid-marker-add:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+
+    .wid-marker-add:focus-visible,
+    .wid-marker-goto:focus-visible,
+    .wid-marker-remove:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+
+    .wid-marker-empty {
+      margin: 0;
+      color: #94a3b8;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-marker-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wid-marker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wid-marker-goto {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #17202a;
+      font: 500 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .wid-marker-goto:hover {
+      background: #e8eef7;
+    }
+
+    .wid-marker-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .wid-marker-pct {
+      flex: 0 0 auto;
+      color: #64748b;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wid-marker-remove {
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #475569;
+      font: 400 16px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-marker-remove:hover {
+      background: #e8eef7;
+    }
+
     .wid-coming-soon {
       flex: 1;
       display: flex;
