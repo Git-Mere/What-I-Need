@@ -742,9 +742,12 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     });
   });
 
-  // Handle 2: the opened icon strip (no feature selected). Drag = reposition; the
-  // icon buttons keep their own click (drag suppresses the trailing click).
+  // Handle 2: the opened icon strip (no feature selected). Drag only from the
+  // bar's own area; a press on a feature icon must select it, not reposition.
   panel.addEventListener("pointerdown", (event) => {
+    if ((event.target as HTMLElement).closest("button")) {
+      return;
+    }
     startVerticalDrag(event, panel, {
       occupiedHeight: () => RAIL_SHELL_HEIGHT,
       apply: (px) => applyTop(root, px)

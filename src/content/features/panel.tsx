@@ -65,10 +65,14 @@ function Panel({ initialFeature, onClose }: PanelProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Handle 3: dragging the top icon bar repositions the whole rail/panel. The
-  // feature icons and close button keep their clicks (a drag suppresses the
-  // trailing click). Clamp against the live panel height so it stays on screen.
+  // Handle 3: dragging the top icon bar repositions the whole rail/panel. Drag
+  // only from the bar's own area; a press on a feature icon or the close button
+  // must run that button's click, not start a reposition. Clamp against the live
+  // panel height so it stays on screen.
   const onBarPointerDown = (event: PointerEvent) => {
+    if ((event.target as HTMLElement).closest("button")) {
+      return;
+    }
     const bar = event.currentTarget as HTMLElement;
     const root = bar.closest<HTMLElement>(".wid-rail-root");
     const panelEl = bar.closest<HTMLElement>(".wid-expanded");
