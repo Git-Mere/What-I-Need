@@ -928,6 +928,74 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
+
+    .wid-help {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: auto;
+      color: #17202a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-help-intro {
+      margin: 0;
+      color: #64748b;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-help-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .wid-help-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+
+    .wid-help-badge {
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #17202a;
+      font: 600 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-help-body {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .wid-help-name {
+      color: #17202a;
+      font: 600 13px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-help-desc {
+      color: #64748b;
+      font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
   `;
 
   const root = document.createElement("div");

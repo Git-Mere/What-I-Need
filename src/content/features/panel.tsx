@@ -12,6 +12,7 @@ import { FEATURES, type WidFeatureName } from "./registry";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
 import { Eyedropper } from "./eyedropper";
+import { Help } from "./help";
 import { Marker } from "./marker";
 import { Memo } from "./memo";
 import { Search } from "./search";
@@ -44,6 +45,10 @@ function FeatureContent({ feature }: { feature: WidFeatureName }) {
 
   if (feature === "Eyedropper") {
     return <Eyedropper />;
+  }
+
+  if (feature === "Help") {
+    return <Help />;
   }
 
   return (

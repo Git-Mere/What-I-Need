@@ -4,7 +4,8 @@ export type WidFeatureName =
   | "Memo"
   | "Calculator"
   | "Multi-search"
-  | "Eyedropper";
+  | "Eyedropper"
+  | "Help";
 
 export type WidFeature = {
   name: WidFeatureName;
@@ -17,5 +18,6 @@ export const FEATURES: WidFeature[] = [
   { name: "Memo", label: "N" },
   { name: "Calculator", label: "C" },
   { name: "Multi-search", label: "S" },
-  { name: "Eyedropper", label: "E" }
+  // Eyedropper disabled: native EyeDropper API freezes the browser on some platforms after a successful pick. Component/route preserved for later re-enable.
+  { name: "Help", label: "?" }
 ];
