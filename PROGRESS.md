@@ -115,9 +115,8 @@ src/background/service-worker.ts stub
 - brush-ux(`afcf1cf`) 추가 개선: 커서 링(브러시=굵기/지우개=고정 24px), 지우개 고정 반경(ERASER_RADIUS=12, 보이는 원=지워지는 범위, 이전 "굵기 연동" follow-up 해소), 레일/패널 수직 드래그 이동(`rail-position.ts`, 3핸들, 버튼 클릭 보존, 4px 임계, 클램프, 드래그 종료 시만 영속)
 - brush-ux 추가 follow-up(비차단): 클릭 억제 `setTimeout(0)` 타이밍 의존 → 플래그화 / `persistRailTop` 설정 병합 deep-merge
 
-### D. 레일 on/off 토글 (전역 + 사이트별)
-- `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
-- 사이트 우측 위젯(채팅/맨위로 버튼 등)과 겹칠 때 끄기용 — 사용성상 필요
+### D. 레일 on/off 토글 (전역 + 사이트별) — ❌ 계획에서 제외 (사용자 결정, 불필요)
+- (참고) `wid:settings.railEnabled`, `disabledHosts` 타입은 존재하나 구현 안 함
 
 ### F. 스포이드 (Eyedropper) — ⛔ 비활성 (`ad0af71`), 코드 보존
 - **비활성 사유**: 네이티브 크로뮴 `EyeDropper` API가 **색 채집 성공 직후 브라우저 창 전체를 얼림**(마우스 그랩 미해제로 추정, 닫기 버튼도 안 먹혀 강제 종료 필요). 확장 없는 맨 페이지 콘솔(`new EyeDropper().open()`)에서도 동일 재현 → 플랫폼/브라우저 버그, 우리 코드로 수정 불가.
@@ -150,19 +149,19 @@ src/background/service-worker.ts stub
 - [x] **IME 조합 중 Enter 무시** (`4e6e7e0`) — `Enter && !event.isComposing`.
 - [x] **detach 노드 scrollIntoView 가드** (`4e6e7e0`) — target이 Element일 때만 호출, 아니면 no-op.
 - [ ] **알려진 한계(A안으로 출시)**: 인라인 태그로 쪼개진 텍스트 노드 경계를 넘는 매치는 못 찾음. 예: `가격은 <b>10,000</b>원` 에서 "10,000원", 코드 하이라이팅 페이지의 여러 span으로 쪼개진 토큰, 링크/볼드가 단어 중간에 낀 구절. 단일 단어의 일반 본문 검색은 정상. 필요하면 크로스-노드 Range 병합으로 개선(B안).
-- [ ] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능.
-- [ ] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전
+- [x] (v2 리뷰 비차단) `scrollRangeIntoView`: 검색 후 동적 페이지가 DOM을 바꿔 text node가 detach되면 fallback 캐스트(`startContainer as Element`)가 Text에서 `scrollIntoView` 호출로 TypeError 가능. `target instanceof Element` 가드 1줄로 방어 가능. — 해결(`b33b6bd`)
+- [x] (교차리뷰 비차단) `runSearch`/`removeRow` 가 `rows` 를 클로저로 잡음 → `setRows(current => ...)` 함수형 업데이트가 더 안전 — 해결(`b33b6bd`)
 
 ### 메모
-- [ ] 닫을 때 디바운스 **flush** — 400ms 안에 패널 닫으면 마지막 입력이 유실됨
-- [ ] 중첩된 `.wid-expanded` 클래스(레일 outer + Preact inner) 정리
+- [x] 닫을 때 디바운스 **flush** — 400ms 안에 패널 닫으면 마지막 입력이 유실됨 — 해결(`e2a2ab3`)
+- [x] 중첩된 `.wid-expanded` 클래스(레일 outer + Preact inner) 정리 — 해결(`e2a2ab3`)
 
 ### 계산기
-- [ ] 반복 `=` 가 마지막 연산을 반복하도록 (윈도우: `5 + 3 =` → 8, `=` → 11). 현재는 두 번째 `=` 가 무시됨
-- [ ] `persistHistoryItem` 의 부작용(setHistory + 저장)을 `setState` 업데이터 밖(`useEffect`)으로 이동
-- [ ] 단독 `%` → `0` 반환 (윈도우 동작). 현재는 `value/100`
-- [ ] 지수 표기 시 끝자리 0 제거 (아주 큰/작은 수에서만, 표시상)
-- [ ] 사소: `%` 직후 숫자 입력 시 결과에 append됨 / `+/-` 가 waitingForEntry 무시 / 소수점 입력이 MAX_INPUT_LENGTH 제한 안 받음
+- [x] 반복 `=` 가 마지막 연산을 반복하도록 (윈도우: `5 + 3 =` → 8, `=` → 11). 현재는 두 번째 `=` 가 무시됨 — 해결(`5f0ce0a`)
+- [x] `persistHistoryItem` 의 부작용(setHistory + 저장)을 `setState` 업데이터 밖(`useEffect`)으로 이동 — 해결(`5f0ce0a`)
+- [x] 단독 `%` → `0` 반환 (윈도우 동작). 현재는 `value/100` — 해결(`5f0ce0a`)
+- [x] 지수 표기 시 끝자리 0 제거 (아주 큰/작은 수에서만, 표시상) — 해결(`5f0ce0a`)
+- [x] 사소: `%` 직후 숫자 입력 시 결과에 append됨 / `+/-` 가 waitingForEntry 무시 / 소수점 입력이 MAX_INPUT_LENGTH 제한 안 받음 — 해결(`5f0ce0a`)
 
 ---
 
