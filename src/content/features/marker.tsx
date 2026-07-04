@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 // Scroll-position bookmarks for the current page. Volatile / memory-only: markers
 // live in component state for this tab only and vanish on navigation or unload
@@ -9,6 +9,10 @@ type Marker = {
   id: number;
   // Scroll offset (window.scrollY) captured when the marker was added.
   y: number;
+  // User-facing label. Defaults to "Mark N" (N assigned at creation, see
+  // nextMarkerId) and can be renamed; the stored value drives the display so a
+  // renamed marker keeps its name regardless of list position after deletes.
+  name: string;
 };
 
 // Full scroll offset for the given saved position expressed as 0-100% of the
@@ -23,10 +27,29 @@ function scrollPercent(y: number): number {
   return Math.min(100, Math.max(0, pct));
 }
 
+// Monotonic counter. Doubles as each marker's stable id and its default label
+// number, so labels never renumber when earlier markers are removed.
 let nextMarkerId = 0;
+
+function defaultName(id: number): string {
+  return `Mark ${id}`;
+}
 
 export function Marker() {
   const [markers, setMarkers] = useState<Marker[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Set while cancelling (Esc) so the input's trailing blur commit is skipped.
+  const cancelledRef = useRef(false);
+
+  // Focus and select the field when a row enters rename mode.
+  useEffect(() => {
+    if (editingId !== null && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingId]);
 
   const addMarker = () => {
     setMarkers((current) => {
@@ -34,7 +57,10 @@ export function Marker() {
         return current;
       }
       nextMarkerId += 1;
-      return [...current, { id: nextMarkerId, y: window.scrollY }];
+      return [
+        ...current,
+        { id: nextMarkerId, y: window.scrollY, name: defaultName(nextMarkerId) },
+      ];
     });
   };
 
@@ -44,6 +70,37 @@ export function Marker() {
 
   const goToMarker = (y: number) => {
     window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
+  const startRename = (marker: Marker) => {
+    cancelledRef.current = false;
+    setDraft(marker.name);
+    setEditingId(marker.id);
+  };
+
+  const commitRename = () => {
+    if (editingId === null) {
+      return;
+    }
+    if (cancelledRef.current) {
+      cancelledRef.current = false;
+      return;
+    }
+    const id = editingId;
+    const trimmed = draft.trim();
+    setMarkers((current) =>
+      current.map((marker) =>
+        marker.id === id
+          ? { ...marker, name: trimmed || defaultName(marker.id) }
+          : marker,
+      ),
+    );
+    setEditingId(null);
+  };
+
+  const cancelRename = () => {
+    cancelledRef.current = true;
+    setEditingId(null);
   };
 
   const atMax = markers.length >= MAX_MARKERS;
@@ -56,31 +113,66 @@ export function Marker() {
         disabled={atMax}
         onClick={addMarker}
       >
-        {atMax ? "최대 10개" : "+ 마커 추가"}
+        {atMax ? "Max 10" : "+ Add mark"}
       </button>
 
       {markers.length === 0 ? (
-        <p class="wid-marker-empty">현재 스크롤 위치를 마커로 저장하세요.</p>
+        <p class="wid-marker-empty">
+          Save your current scroll position as a mark.
+        </p>
       ) : (
         <ul class="wid-marker-list">
-          {markers.map((marker, index) => (
+          {markers.map((marker) => (
             <li class="wid-marker-row" key={marker.id}>
-              <button
-                type="button"
-                class="wid-marker-goto"
-                title="이 위치로 이동"
-                onClick={() => goToMarker(marker.y)}
-              >
-                <span class="wid-marker-name">마커 {index + 1}</span>
-                <span class="wid-marker-pct">
-                  {Math.round(scrollPercent(marker.y))}%
-                </span>
-              </button>
+              {editingId === marker.id ? (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  class="wid-marker-input"
+                  aria-label="Mark name"
+                  value={draft}
+                  onInput={(event) =>
+                    setDraft((event.target as HTMLInputElement).value)
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.isComposing) {
+                      commitRename();
+                    } else if (event.key === "Escape") {
+                      event.preventDefault();
+                      cancelRename();
+                    }
+                  }}
+                  onBlur={commitRename}
+                />
+              ) : (
+                <button
+                  type="button"
+                  class="wid-marker-goto"
+                  title="Go to this position"
+                  onClick={() => goToMarker(marker.y)}
+                >
+                  <span class="wid-marker-name">{marker.name}</span>
+                  <span class="wid-marker-pct">
+                    {Math.round(scrollPercent(marker.y))}%
+                  </span>
+                </button>
+              )}
+              {editingId !== marker.id && (
+                <button
+                  type="button"
+                  class="wid-marker-edit"
+                  title="Rename mark"
+                  aria-label="Rename mark"
+                  onClick={() => startRename(marker)}
+                >
+                  ✎
+                </button>
+              )}
               <button
                 type="button"
                 class="wid-marker-remove"
-                title="마커 삭제"
-                aria-label="마커 삭제"
+                title="Delete mark"
+                aria-label="Delete mark"
                 onClick={() => removeMarker(marker.id)}
               >
                 ×
