@@ -81,7 +81,8 @@ src/background/service-worker.ts stub
 
 ## 6. 앞으로 개발할 것 (로드맵)
 
-> **현재 기준 다음 작업 = B. Marker** (Brush 완료/머지 `7acdce8`, Multi-search 완료/종료)
+> **현재 기준 다음 작업 = B. Marker** (Brush·brush-ux 완료/머지 `afcf1cf`, Multi-search 완료/종료)
+> 그 다음 새 기능 대기 중: **F. 스포이드(Eyedropper)** — 아래 F 항목 참고
 
 ### A. 검색 (Multi-search) — ✅ 완료/종료 (v1 `8122225`, v2 nav/10색/10개제한, 자동검색 `e855fc1`, 팔레트 `93005b5`, follow-up 수정 `4e6e7e0`/`a8f6d02`)
 - 확정 동작: Ctrl+F 유사. S 탭 → 검색어 입력 행(기본 1행, **최대 10행**), 아래 + 버튼으로 행 추가(10행 도달 시 disabled). 각 행 `[색점][입력칸][현재/전체 카운트][▲][▼][×]`.
@@ -109,6 +110,16 @@ src/background/service-worker.ts stub
 ### D. 레일 on/off 토글 (전역 + 사이트별)
 - `wid:settings.railEnabled`, `disabledHosts` 타입 이미 존재 (구현만 남음)
 - 사이트 우측 위젯(채팅/맨위로 버튼 등)과 겹칠 때 끄기용 — 사용성상 필요
+
+### F. 스포이드 (Eyedropper) — 새 기능, 사용자 요청 (Marker 다음 대기)
+- 목적: 웹사이트 화면에 있는 아무 색이나 스포이드로 클릭해서 색상 추출
+- 확정 동작(사용자 설명):
+  - 스포이드로 화면의 아무 색 클릭 → 그 색 채집
+  - 툴바에 채집된 색을 네모냳게(스와치) 보여줌, 그 밑에 색상 코드(hex 등) + 복사 버튼
+  - 한 번 채집하면 이후에는 일반 마우스로 돌아옴 (1회성 모드)
+- 구현 힌트: 크로뮬 `EyeDropper` API (`new EyeDropper().open()` → `{ sRGBHex }` 반환, 화면 전체 픽셀 채집 네이티브 지원). 미지원 브라우저 대비 fallback은 추후 결정. 복사는 `navigator.clipboard.writeText`
+- 신규 기능 탭 필요: `registry.ts`에 6번째 기능 추가 + `panel.tsx` 라우팅 + 새 `src/content/features/eyedropper.tsx`
+- 미확정(스펙 시 확인): 채집 기록 여러 개 유지할지(히스토리) vs 마지막 1개만, 저장(설정 지속) vs 휘발, hex 외 rgb/hsl 표기 여부
 
 ### E. 그 외 고려사항
 - 전체화면 자동 숨김 (유튜브 전체화면 등에서 레일 가리기)
