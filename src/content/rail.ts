@@ -1,4 +1,13 @@
 import { FEATURES, type WidFeatureName } from "./features/registry";
+import {
+  RAIL_SHELL_HEIGHT,
+  applyTop,
+  clampTop,
+  currentRailTop,
+  loadRailTop,
+  occupiedPanelHeight,
+  startVerticalDrag
+} from "./rail-position";
 
 export function renderRail(shadowRoot: ShadowRoot): void {
   shadowRoot.replaceChildren();
@@ -11,7 +20,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-rail-root {
       position: fixed;
-      top: 25%;
+      top: var(--wid-rail-top, 25%);
       right: 0;
       z-index: 2147483647;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -45,6 +54,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       border-radius: 6px 0 0 6px;
       background: #1f2937;
       cursor: pointer;
+      touch-action: none;
     }
 
     .wid-tab:focus-visible,
@@ -73,6 +83,9 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       border-radius: 8px 0 0 8px;
       background: #ffffff;
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
 
     .wid-action {
@@ -118,7 +131,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     .wid-rail-root[data-mode="expanded"] .wid-expanded {
       display: flex;
       position: fixed;
-      top: 10vh;
+      top: var(--wid-rail-top, 10vh);
       right: 0;
     }
 
@@ -155,6 +168,9 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       padding: 8px;
       border-bottom: 1px solid rgba(15, 23, 42, 0.12);
       background: #f8fafc;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
 
     .wid-memo-textarea {
@@ -676,6 +692,8 @@ export function renderRail(shadowRoot: ShadowRoot): void {
   tab.className = "wid-tab";
   tab.type = "button";
   tab.ariaLabel = "Toggle What I Need tools";
+  // Click (mouse or keyboard Enter/Space) toggles the rail open. A drag suppresses
+  // the trailing click via startVerticalDrag, so this only fires on a real tap.
   tab.addEventListener("click", () => {
     shell.dataset.open = shell.dataset.open === "true" ? "false" : "true";
   });
@@ -703,6 +721,41 @@ export function renderRail(shadowRoot: ShadowRoot): void {
   root.append(shell, expanded);
   shadowRoot.append(style, root);
 
+  // Paint the saved position, clamped so whatever is visible in the current mode
+  // stays fully on screen (rail shell when collapsed, panel when expanded). The
+  // inner Preact .wid-expanded holds the real panel content.
+  function applyPosition(): void {
+    const inner = expanded.querySelector<HTMLElement>(".wid-expanded");
+    const occupied =
+      root.dataset.mode === "expanded"
+        ? occupiedPanelHeight(inner ?? expanded)
+        : RAIL_SHELL_HEIGHT;
+    applyTop(root, clampTop(currentRailTop(), occupied));
+  }
+
+  // Handle 1: the collapsed rail bar. Drag = reposition; a plain tap toggles via
+  // the click listener above.
+  tab.addEventListener("pointerdown", (event) => {
+    startVerticalDrag(event, tab, {
+      occupiedHeight: () => RAIL_SHELL_HEIGHT,
+      apply: (px) => applyTop(root, px)
+    });
+  });
+
+  // Handle 2: the opened icon strip (no feature selected). Drag = reposition; the
+  // icon buttons keep their own click (drag suppresses the trailing click).
+  panel.addEventListener("pointerdown", (event) => {
+    startVerticalDrag(event, panel, {
+      occupiedHeight: () => RAIL_SHELL_HEIGHT,
+      apply: (px) => applyTop(root, px)
+    });
+  });
+
+  // Seed with the default until the saved value loads; re-clamp on viewport resize.
+  applyTop(root, clampTop(currentRailTop(), RAIL_SHELL_HEIGHT));
+  void loadRailTop().then(applyPosition);
+  window.addEventListener("resize", applyPosition);
+
   let unmountPanel: (() => void) | null = null;
 
   function collapse(): void {
@@ -713,6 +766,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     expanded.replaceChildren();
     root.dataset.mode = "collapsed";
     shell.dataset.open = "false";
+    applyPosition();
   }
 
   async function openPanel(initialFeature: WidFeatureName): Promise<void> {
@@ -725,5 +779,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       unmountPanel();
     }
     unmountPanel = mountPanel(expanded, { initialFeature, onClose: collapse });
+    // Nudge the panel up if the saved position would run it off the bottom.
+    applyPosition();
   }
 }

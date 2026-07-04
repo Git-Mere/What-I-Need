@@ -1,6 +1,13 @@
 import { render } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
+import {
+  applyTop,
+  clampTop,
+  currentRailTop,
+  occupiedPanelHeight,
+  startVerticalDrag
+} from "../rail-position";
 import { FEATURES, type WidFeatureName } from "./registry";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
@@ -39,10 +46,44 @@ function FeatureContent({ feature }: { feature: WidFeatureName }) {
 
 function Panel({ initialFeature, onClose }: PanelProps) {
   const [active, setActive] = useState<WidFeatureName>(initialFeature);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Re-clamp whenever the panel's height changes (feature switch, calc history)
+  // so a downward-growing panel anchored low never runs off the bottom.
+  useEffect(() => {
+    const panelEl = panelRef.current;
+    const root = panelEl?.closest<HTMLElement>(".wid-rail-root");
+    if (!panelEl || !root) {
+      return;
+    }
+    const reclamp = (): void => {
+      applyTop(root, clampTop(currentRailTop(), occupiedPanelHeight(panelEl)));
+    };
+    reclamp();
+    const observer = new ResizeObserver(reclamp);
+    observer.observe(panelEl);
+    return () => observer.disconnect();
+  }, []);
+
+  // Handle 3: dragging the top icon bar repositions the whole rail/panel. The
+  // feature icons and close button keep their clicks (a drag suppresses the
+  // trailing click). Clamp against the live panel height so it stays on screen.
+  const onBarPointerDown = (event: PointerEvent) => {
+    const bar = event.currentTarget as HTMLElement;
+    const root = bar.closest<HTMLElement>(".wid-rail-root");
+    const panelEl = bar.closest<HTMLElement>(".wid-expanded");
+    if (!root || !panelEl) {
+      return;
+    }
+    startVerticalDrag(event, bar, {
+      occupiedHeight: () => occupiedPanelHeight(panelEl),
+      apply: (px) => applyTop(root, px)
+    });
+  };
 
   return (
-    <div class="wid-expanded">
-      <div class="wid-expanded-bar" role="tablist">
+    <div class="wid-expanded" ref={panelRef}>
+      <div class="wid-expanded-bar" role="tablist" onPointerDown={onBarPointerDown}>
         {FEATURES.map((feature) => (
           <button
             key={feature.name}

@@ -15,8 +15,8 @@ export const DEFAULT_BRUSH: BrushSettings = {
 };
 
 // Used only when no settings object exists yet, so writing brush settings does
-// not clobber the (as-yet unimplemented) rail on/off fields.
-const DEFAULT_SETTINGS: WidSettings = {
+// not clobber the rail on/off / position fields. Shared with rail-position.
+export const DEFAULT_SETTINGS: WidSettings = {
   railEnabled: true,
   disabledHosts: [],
   brush: { ...DEFAULT_BRUSH }
@@ -26,9 +26,13 @@ type Point = { x: number; y: number };
 type Stroke = { points: Point[]; color: string; width: number };
 
 const CANVAS_ID = "wid-brush-canvas";
+const CURSOR_ID = "wid-brush-cursor";
 const SHADOW_HOST_ID = "wid-shadow-host";
 // One below the rail's z-index (2147483647) so drawings never cover the WID UI.
 const CANVAS_Z_INDEX = "2147483646";
+// Fixed eraser reach (px, from the pointer). The eraser cursor circle uses the
+// matching diameter so what the ring covers is exactly what gets erased.
+const ERASER_RADIUS = 12;
 
 // The activation key must not fire while the user is typing. Focus inside the
 // WID Shadow DOM UI resolves to the host element from the top document, so we
@@ -98,6 +102,9 @@ function strokeHit(stroke: Stroke, point: Point, eraserRadius: number): boolean 
 class BrushEngine {
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
+  // Circular cursor that follows the pointer while drawing mode is active.
+  private cursorEl: HTMLDivElement | null = null;
+  private cursorPage: Point | null = null;
   // Vector stroke objects. Volatile: memory only, never persisted.
   private strokes: Stroke[] = [];
   private current: Stroke | null = null;
@@ -143,6 +150,7 @@ class BrushEngine {
     document.documentElement.append(canvas);
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    this.mountCursor();
     this.syncSize();
     this.applyHeldStyle();
 
@@ -150,6 +158,28 @@ class BrushEngine {
     canvas.addEventListener("pointermove", this.onPointerMove);
     canvas.addEventListener("pointerup", this.onPointerUp);
     canvas.addEventListener("pointercancel", this.onPointerUp);
+    canvas.addEventListener("pointerenter", this.onPointerEnter);
+    canvas.addEventListener("pointerleave", this.onPointerLeave);
+  }
+
+  // A ring that follows the pointer, standing in for the (hidden) OS cursor while
+  // drawing. Absolutely positioned in page coords like the canvas, one z below
+  // the WID UI, and never intercepts pointer events.
+  private mountCursor(): void {
+    const cursor = document.createElement("div");
+    cursor.id = CURSOR_ID;
+    const s = cursor.style;
+    s.position = "absolute";
+    s.zIndex = CANVAS_Z_INDEX;
+    s.pointerEvents = "none";
+    s.boxSizing = "border-box";
+    s.borderRadius = "50%";
+    // White ring plus a black outline so it reads on any background.
+    s.border = "1.5px solid #ffffff";
+    s.boxShadow = "0 0 0 1.5px rgba(0, 0, 0, 0.85)";
+    s.display = "none";
+    document.documentElement.append(cursor);
+    this.cursorEl = cursor;
   }
 
   private attachListeners(): void {
@@ -202,6 +232,49 @@ class BrushEngine {
     return { x: event.clientX + window.scrollX, y: event.clientY + window.scrollY };
   }
 
+  // Brush: diameter tracks the live stroke width. Eraser: fixed erase diameter.
+  private cursorDiameter(): number {
+    return this.eraser ? ERASER_RADIUS * 2 : this.settings.width;
+  }
+
+  // Resize + re-center the ring on the last known point (no-op if never moved).
+  private positionCursor(): void {
+    if (!this.cursorEl || !this.cursorPage) {
+      return;
+    }
+    const d = this.cursorDiameter();
+    const s = this.cursorEl.style;
+    s.width = `${d}px`;
+    s.height = `${d}px`;
+    s.left = `${this.cursorPage.x - d / 2}px`;
+    s.top = `${this.cursorPage.y - d / 2}px`;
+  }
+
+  private showCursor(page: Point): void {
+    if (!this.cursorEl) {
+      return;
+    }
+    this.cursorPage = page;
+    this.positionCursor();
+    this.cursorEl.style.display = "block";
+  }
+
+  private hideCursor(): void {
+    if (this.cursorEl) {
+      this.cursorEl.style.display = "none";
+    }
+  }
+
+  private onPointerEnter = (event: PointerEvent): void => {
+    if (this.held) {
+      this.showCursor(this.toPagePoint(event));
+    }
+  };
+
+  private onPointerLeave = (): void => {
+    this.hideCursor();
+  };
+
   private onPointerDown = (event: PointerEvent): void => {
     if (!this.held || !this.canvas) {
       return;
@@ -210,6 +283,7 @@ class BrushEngine {
     this.canvas.setPointerCapture(event.pointerId);
     this.drawing = true;
     const point = this.toPagePoint(event);
+    this.showCursor(point);
     if (this.eraser) {
       this.eraseAt(point);
       return;
@@ -223,6 +297,10 @@ class BrushEngine {
   };
 
   private onPointerMove = (event: PointerEvent): void => {
+    // Canvas events only fire while held, so the ring follows the pointer here.
+    if (this.held) {
+      this.showCursor(this.toPagePoint(event));
+    }
     if (!this.drawing || !this.ctx) {
       return;
     }
@@ -262,7 +340,7 @@ class BrushEngine {
 
   // Object-level eraser: any stroke the eraser touches is removed whole.
   private eraseAt(point: Point): void {
-    const radius = Math.max(this.settings.width, 8) / 2 + 2;
+    const radius = ERASER_RADIUS;
     const before = this.strokes.length;
     this.strokes = this.strokes.filter((stroke) => !strokeHit(stroke, point, radius));
     if (this.strokes.length !== before) {
@@ -359,6 +437,10 @@ class BrushEngine {
     if (!next && this.drawing) {
       this.finishStroke();
     }
+    // The ring only exists while the key is held.
+    if (!next) {
+      this.hideCursor();
+    }
   }
 
   private applyHeldStyle(): void {
@@ -366,7 +448,8 @@ class BrushEngine {
       return;
     }
     this.canvas.style.pointerEvents = this.held ? "auto" : "none";
-    this.canvas.style.cursor = this.held ? "crosshair" : "";
+    // Hide the OS cursor while held; the ring stands in for it.
+    this.canvas.style.cursor = this.held ? "none" : "";
   }
 
   private async persist(): Promise<void> {
@@ -382,6 +465,8 @@ class BrushEngine {
 
   setWidth(width: number): void {
     this.settings.width = width;
+    // Live-update the brush ring diameter as the slider moves.
+    this.positionCursor();
     void this.persist();
   }
 
@@ -392,6 +477,8 @@ class BrushEngine {
 
   setEraser(on: boolean): void {
     this.eraser = on;
+    // Switch the ring between brush width and the fixed eraser diameter.
+    this.positionCursor();
   }
 
   clearAll(): void {
