@@ -550,7 +550,9 @@ export function renderRail(shadowRoot: ShadowRoot): void {
 
     .wid-marker-add:focus-visible,
     .wid-marker-goto:focus-visible,
-    .wid-marker-remove:focus-visible {
+    .wid-marker-edit:focus-visible,
+    .wid-marker-remove:focus-visible,
+    .wid-marker-input:focus-visible {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
@@ -613,6 +615,37 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       flex: 0 0 auto;
       color: #64748b;
       font-variant-numeric: tabular-nums;
+    }
+
+    .wid-marker-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #17202a;
+      font: 500 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-marker-edit {
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(15, 23, 42, 0.16);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #475569;
+      font: 400 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .wid-marker-edit:hover {
+      background: #e8eef7;
     }
 
     .wid-marker-remove {
