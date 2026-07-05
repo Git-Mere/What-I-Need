@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { getBrushEngine } from "./brush-engine";
+import { t } from "../../shared/i18n";
 
 const WHEEL_SIZE = 150;
 const WHEEL_RADIUS = WHEEL_SIZE / 2;
@@ -218,6 +219,9 @@ export function Brush() {
   const markerX = WHEEL_RADIUS + Math.cos(markerRad) * hsv.s * WHEEL_RADIUS;
   const markerY = WHEEL_RADIUS + Math.sin(markerRad) * hsv.s * WHEEL_RADIUS;
   const color = hsvToHex(hsv);
+  // The hint bolds the key inline, so localize around a {key} token and splice
+  // the <strong> in between rather than baking markup into the message.
+  const hintParts = t("brush_hint").split("{key}");
 
   return (
     <div class="wid-brush" aria-disabled={!ready}>
@@ -241,7 +245,7 @@ export function Brush() {
       </div>
 
       <label class="wid-brush-field">
-        <span>Brightness</span>
+        <span>{t("brush_brightness")}</span>
         <input
           type="range"
           min={0}
@@ -254,7 +258,7 @@ export function Brush() {
       </label>
 
       <label class="wid-brush-field">
-        <span>Width</span>
+        <span>{t("brush_width")}</span>
         <input
           type="range"
           min={MIN_WIDTH}
@@ -280,28 +284,26 @@ export function Brush() {
           aria-pressed={eraser}
           onClick={toggleEraser}
         >
-          Eraser
+          {t("brush_eraser")}
         </button>
         <button type="button" class="wid-brush-btn" onClick={() => engine.clearAll()}>
-          Clear all
+          {t("brush_clear_all")}
         </button>
       </div>
 
       <div class="wid-brush-field">
-        <span>Shortcut</span>
+        <span>{t("brush_shortcut")}</span>
         <button
           type="button"
           class="wid-brush-key"
           data-capturing={rebinding}
           onClick={() => setRebinding((current) => !current)}
         >
-          {rebinding ? "Press a key…" : `Hold ${keyLabel(keyCode)}`}
+          {rebinding ? t("brush_press_key") : t("brush_hold_key", [keyLabel(keyCode)])}
         </button>
       </div>
 
-      <p class="wid-brush-hint">
-        Hold <strong>{keyLabel(keyCode)}</strong> and drag to draw. Release to use the page.
-      </p>
+      <p class="wid-brush-hint">{hintParts[0]}<strong>{keyLabel(keyCode)}</strong>{hintParts[1]}</p>
     </div>
   );
 }

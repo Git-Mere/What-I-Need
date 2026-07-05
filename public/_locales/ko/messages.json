@@ -1,0 +1,219 @@
+{
+  "extension_name": {
+    "message": "What I Need",
+    "description": "Extension name shown in the browser and store."
+  },
+  "extension_description": {
+    "message": "페이지 위에서 바로 쓰는 도구 모음: 스크롤 마커, 자유 그리기 브러시, 전역 메모, 계산기, 다중 검색.",
+    "description": "Extension description shown in the browser and store."
+  },
+  "rail_toggle": {
+    "message": "What I Need 도구 열기/닫기",
+    "description": "Accessible label for the collapsed rail tab that opens/closes the toolbar."
+  },
+  "feature_marker": {
+    "message": "마커",
+    "description": "Display name of the Marker feature."
+  },
+  "feature_brush": {
+    "message": "브러시",
+    "description": "Display name of the Brush feature."
+  },
+  "feature_memo": {
+    "message": "메모",
+    "description": "Display name of the Memo feature."
+  },
+  "feature_calculator": {
+    "message": "계산기",
+    "description": "Display name of the Calculator feature."
+  },
+  "feature_multi_search": {
+    "message": "다중 검색",
+    "description": "Display name of the Multi-search feature."
+  },
+  "feature_eyedropper": {
+    "message": "스포이드",
+    "description": "Display name of the Eyedropper feature."
+  },
+  "feature_help": {
+    "message": "도움말",
+    "description": "Display name of the Help feature."
+  },
+  "panel_collapse_title": {
+    "message": "접기",
+    "description": "Tooltip on the button that closes the expanded panel."
+  },
+  "panel_collapse_aria": {
+    "message": "패널 접기",
+    "description": "Accessible label for the button that closes the expanded panel."
+  },
+  "coming_soon": {
+    "message": "곧 제공됩니다.",
+    "description": "Placeholder text for a feature that is not yet implemented."
+  },
+  "help_intro": {
+    "message": "오른쪽 레일의 버튼을 눌러 각 도구를 열 수 있어요. Marker와 Brush는 페이지를 떠나면 사라지는 휘발성 도구예요.",
+    "description": "Intro paragraph at the top of the Help panel."
+  },
+  "help_marker_desc": {
+    "message": "스크롤 위치 북마크. '+ Add mark'로 현재 스크롤 위치를 저장하고, 목록에서 클릭하면 그 위치로 이동. 이름 변경(연필)과 개별 삭제 가능, 최대 10개. 페이지를 떠나면 사라지는 휘발성.",
+    "description": "Help description for the Marker feature."
+  },
+  "help_brush_desc": {
+    "message": "페이지 위에 자유롭게 그리는 펜. 색상/굵기 조절, 지우개, 일괄 지우기 지원. 단축키(기본 백틱 `)를 누르고 있는 동안만 그려짐. 휘발성(메모리만).",
+    "description": "Help description for the Brush feature."
+  },
+  "help_memo_desc": {
+    "message": "어느 사이트에서나 공유되는 전역 메모 1개. 입력하면 자동 저장됨.",
+    "description": "Help description for the Memo feature."
+  },
+  "help_calculator_desc": {
+    "message": "윈도우 계산기 스타일의 기본 계산기. 최근 계산 기록을 남겨 다시 확인 가능.",
+    "description": "Help description for the Calculator feature."
+  },
+  "help_multi_search_desc": {
+    "message": "페이지 내 여러 검색어를 동시에 하이라이트(Ctrl+F 유사). 검색어별로 다른 색, ▲▼로 매치 간 이동, 최대 10개 검색어.",
+    "description": "Help description for the Multi-search feature."
+  },
+  "marker_add": {
+    "message": "+ 마크 추가",
+    "description": "Button that saves the current scroll position as a marker."
+  },
+  "marker_max": {
+    "message": "최대 $COUNT$개",
+    "description": "Disabled add-button label shown when the marker limit is reached.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "marker_empty": {
+    "message": "현재 스크롤 위치를 마크로 저장하세요.",
+    "description": "Empty-state text shown when no markers exist."
+  },
+  "marker_name_aria": {
+    "message": "마크 이름",
+    "description": "Accessible label for the marker rename input."
+  },
+  "marker_default_name": {
+    "message": "마크 $NUMBER$",
+    "description": "Default name given to a new marker.",
+    "placeholders": {
+      "number": { "content": "$1", "example": "3" }
+    }
+  },
+  "marker_goto_title": {
+    "message": "이 위치로 이동",
+    "description": "Tooltip on a marker row that scrolls back to its position."
+  },
+  "marker_rename": {
+    "message": "마크 이름 변경",
+    "description": "Tooltip/label for the marker rename (pencil) button."
+  },
+  "marker_delete": {
+    "message": "마크 삭제",
+    "description": "Tooltip/label for the marker delete button."
+  },
+  "memo_placeholder": {
+    "message": "메모를 입력하세요. 자동으로 저장됩니다.",
+    "description": "Placeholder text in the memo textarea."
+  },
+  "brush_brightness": {
+    "message": "밝기",
+    "description": "Label for the brush brightness slider."
+  },
+  "brush_width": {
+    "message": "굵기",
+    "description": "Label for the brush width slider."
+  },
+  "brush_eraser": {
+    "message": "지우개",
+    "description": "Toggle button that switches the brush into eraser mode."
+  },
+  "brush_clear_all": {
+    "message": "전체 지우기",
+    "description": "Button that clears all brush strokes."
+  },
+  "brush_shortcut": {
+    "message": "단축키",
+    "description": "Label for the brush activation-key control."
+  },
+  "brush_press_key": {
+    "message": "키를 누르세요…",
+    "description": "Prompt shown while capturing a new brush activation key."
+  },
+  "brush_hold_key": {
+    "message": "$KEY$ 누르기",
+    "description": "Brush activation-key button showing the current key.",
+    "placeholders": {
+      "key": { "content": "$1", "example": "`" }
+    }
+  },
+  "brush_hint": {
+    "message": "{key} 키를 누른 채 드래그하면 그려져요. 손을 떼면 페이지를 사용할 수 있어요.",
+    "description": "Hint under the brush controls. {key} is replaced at runtime by the bold key label."
+  },
+  "search_placeholder": {
+    "message": "검색어",
+    "description": "Placeholder text in a multi-search input row."
+  },
+  "search_prev": {
+    "message": "이전 일치",
+    "description": "Tooltip/label for the previous-match navigation button."
+  },
+  "search_next": {
+    "message": "다음 일치",
+    "description": "Tooltip/label for the next-match navigation button."
+  },
+  "search_remove": {
+    "message": "행 삭제",
+    "description": "Tooltip/label for the button that removes a search row."
+  },
+  "search_add": {
+    "message": "+ 검색어 추가",
+    "description": "Button that adds another multi-search term row."
+  },
+  "calc_keypad_aria": {
+    "message": "계산기 키패드",
+    "description": "Accessible label for the calculator keypad grid."
+  },
+  "calc_backspace_aria": {
+    "message": "백스페이스",
+    "description": "Accessible label for the calculator backspace button."
+  },
+  "calc_history": {
+    "message": "기록",
+    "description": "Toggle label for the calculator history section."
+  },
+  "calc_clear": {
+    "message": "지우기",
+    "description": "Button that clears the calculator history."
+  },
+  "calc_history_empty": {
+    "message": "아직 계산 기록이 없습니다.",
+    "description": "Empty-state text for the calculator history."
+  },
+  "calc_divide_by_zero": {
+    "message": "0으로 나눌 수 없습니다",
+    "description": "Calculator error shown when dividing by zero."
+  },
+  "calc_invalid_input": {
+    "message": "잘못된 입력",
+    "description": "Calculator error shown for an invalid operation."
+  },
+  "eyedropper_pick": {
+    "message": "색 채집",
+    "description": "Button that starts the eyedropper color picker."
+  },
+  "eyedropper_unsupported": {
+    "message": "이 브라우저는 스포이드를 지원하지 않습니다.",
+    "description": "Note shown when the browser lacks the EyeDropper API."
+  },
+  "eyedropper_copied": {
+    "message": "복사됨",
+    "description": "Copy-button label shown briefly after copying the color."
+  },
+  "eyedropper_copy": {
+    "message": "복사",
+    "description": "Button that copies the picked color to the clipboard."
+  }
+}

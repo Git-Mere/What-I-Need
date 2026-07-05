@@ -6,6 +6,7 @@ import {
   setStorageValue
 } from "../../shared/storage";
 import type { WidCalcHistoryItem } from "../../shared/types";
+import { t } from "../../shared/i18n";
 
 type BinaryOperator = "+" | "-" | "x" | "/";
 
@@ -42,9 +43,17 @@ function trimFormatted(value: string): string {
   return value.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
 }
 
+// The CalcError union stays the canonical (English) identity; this maps it to
+// the localized text shown in the display.
+function errorText(error: CalcError): string {
+  return error === "Cannot divide by zero"
+    ? t("calc_divide_by_zero")
+    : t("calc_invalid_input");
+}
+
 function formatNumber(value: number): string {
   if (!Number.isFinite(value)) {
-    return "Invalid input";
+    return t("calc_invalid_input");
   }
 
   if (Object.is(value, -0) || Math.abs(value) < 1e-12) {
@@ -250,10 +259,10 @@ export function Calculator() {
 
       const value = toNumber(current.display);
       if (operation === "reciprocal" && value === 0) {
-        return { ...current, display: "Cannot divide by zero", error: "Cannot divide by zero" };
+        return { ...current, display: errorText("Cannot divide by zero"), error: "Cannot divide by zero" };
       }
       if (operation === "sqrt" && value < 0) {
-        return { ...current, display: "Invalid input", error: "Invalid input" };
+        return { ...current, display: errorText("Invalid input"), error: "Invalid input" };
       }
 
       const next =
@@ -278,7 +287,7 @@ export function Calculator() {
       if (current.pendingOperator !== null && current.storedValue !== null && !current.waitingForEntry) {
         const result = applyBinary(current.storedValue, current.pendingOperator, inputValue);
         if (result.error !== null) {
-          return { ...current, display: result.error, error: result.error };
+          return { ...current, display: errorText(result.error), error: result.error };
         }
 
         return {
@@ -325,7 +334,7 @@ export function Calculator() {
 
     const result = applyBinary(left, operator, right);
     if (result.error !== null) {
-      setState({ ...state, display: result.error, error: result.error });
+      setState({ ...state, display: errorText(result.error), error: result.error });
       return;
     }
 
@@ -358,11 +367,11 @@ export function Calculator() {
       <div class="wid-calc-indicator" aria-hidden="true">{indicator}</div>
       <div class="wid-calc-display" aria-live="polite">{state.display}</div>
 
-      <div class="wid-calc-keypad" aria-label="Calculator keypad">
+      <div class="wid-calc-keypad" aria-label={t("calc_keypad_aria")}>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={applyPercent}>%</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearEntry}>CE</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearAll}>C</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label="Backspace" onClick={backspace}>Back</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_backspace_aria")} onClick={backspace}>Back</button>
 
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("reciprocal")}>1/x</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("square")}>x^2</button>
@@ -398,19 +407,19 @@ export function Calculator() {
             aria-expanded={historyOpen}
             onClick={() => setHistoryOpen((open) => !open)}
           >
-            <span>History</span>
+            <span>{t("calc_history")}</span>
             <span class="wid-calc-history-caret" aria-hidden="true">{historyOpen ? "▾" : "▸"}</span>
           </button>
           {historyOpen && (
             <button type="button" class="wid-calc-history-clear" onClick={clearHistory} disabled={history.length === 0}>
-              Clear
+              {t("calc_clear")}
             </button>
           )}
         </div>
         {historyOpen && (
           <div class="wid-calc-history-list">
             {history.length === 0 ? (
-              <div class="wid-calc-history-empty">No calculations yet.</div>
+              <div class="wid-calc-history-empty">{t("calc_history_empty")}</div>
             ) : (
               history.slice().reverse().map((item) => (
                 <div class="wid-calc-history-item" key={`${item.at}-${item.expr}`}>

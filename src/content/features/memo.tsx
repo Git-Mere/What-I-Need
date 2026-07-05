@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { getStorageValue, setStorageValue } from "../../shared/storage";
+import { t } from "../../shared/i18n";
 
 const DEBOUNCE_MS = 400;
 
@@ -73,7 +74,7 @@ export function Memo() {
   return (
     <textarea
       class="wid-memo-textarea"
-      placeholder="Type a note. It saves automatically."
+      placeholder={t("memo_placeholder")}
       value={text}
       disabled={!ready}
       onInput={handleInput}

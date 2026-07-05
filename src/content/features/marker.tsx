@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import { t } from "../../shared/i18n";
+
 // Scroll-position bookmarks for the current page. Volatile / memory-only: markers
 // live in component state for this tab only and vanish on navigation or unload
 // (matches the project's '휘발성' convention, like Brush). No storage layer.
@@ -32,7 +34,7 @@ function scrollPercent(y: number): number {
 let nextMarkerId = 0;
 
 function defaultName(id: number): string {
-  return `Mark ${id}`;
+  return t("marker_default_name", [String(id)]);
 }
 
 export function Marker() {
@@ -113,13 +115,11 @@ export function Marker() {
         disabled={atMax}
         onClick={addMarker}
       >
-        {atMax ? "Max 10" : "+ Add mark"}
+        {atMax ? t("marker_max", [String(MAX_MARKERS)]) : t("marker_add")}
       </button>
 
       {markers.length === 0 ? (
-        <p class="wid-marker-empty">
-          Save your current scroll position as a mark.
-        </p>
+        <p class="wid-marker-empty">{t("marker_empty")}</p>
       ) : (
         <ul class="wid-marker-list">
           {markers.map((marker) => (
@@ -129,7 +129,7 @@ export function Marker() {
                   ref={inputRef}
                   type="text"
                   class="wid-marker-input"
-                  aria-label="Mark name"
+                  aria-label={t("marker_name_aria")}
                   value={draft}
                   onInput={(event) =>
                     setDraft((event.target as HTMLInputElement).value)
@@ -148,7 +148,7 @@ export function Marker() {
                 <button
                   type="button"
                   class="wid-marker-goto"
-                  title="Go to this position"
+                  title={t("marker_goto_title")}
                   onClick={() => goToMarker(marker.y)}
                 >
                   <span class="wid-marker-name">{marker.name}</span>
@@ -161,8 +161,8 @@ export function Marker() {
                 <button
                   type="button"
                   class="wid-marker-edit"
-                  title="Rename mark"
-                  aria-label="Rename mark"
+                  title={t("marker_rename")}
+                  aria-label={t("marker_rename")}
                   onClick={() => startRename(marker)}
                 >
                   ✎
@@ -171,8 +171,8 @@ export function Marker() {
               <button
                 type="button"
                 class="wid-marker-remove"
-                title="Delete mark"
-                aria-label="Delete mark"
+                title={t("marker_delete")}
+                aria-label={t("marker_delete")}
                 onClick={() => removeMarker(marker.id)}
               >
                 ×

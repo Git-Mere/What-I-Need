@@ -8,7 +8,8 @@ import {
   occupiedPanelHeight,
   startVerticalDrag
 } from "../rail-position";
-import { FEATURES, type WidFeatureName } from "./registry";
+import { FEATURES, featureName, type WidFeatureName } from "./registry";
+import { t } from "../../shared/i18n";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
 import { Eyedropper } from "./eyedropper";
@@ -53,8 +54,8 @@ function FeatureContent({ feature }: { feature: WidFeatureName }) {
 
   return (
     <div class="wid-coming-soon">
-      <strong>{feature}</strong>
-      <span>Coming soon.</span>
+      <strong>{featureName(feature)}</strong>
+      <span>{t("coming_soon")}</span>
     </div>
   );
 }
@@ -110,8 +111,8 @@ function Panel({ initialFeature, onClose }: PanelProps) {
             class="wid-action"
             data-active={feature.name === active}
             aria-selected={feature.name === active}
-            title={feature.name}
-            aria-label={feature.name}
+            title={featureName(feature.name)}
+            aria-label={featureName(feature.name)}
             onClick={() => setActive(feature.name)}
           >
             {feature.label}
@@ -120,8 +121,8 @@ function Panel({ initialFeature, onClose }: PanelProps) {
         <button
           type="button"
           class="wid-expanded-close"
-          title="Collapse"
-          aria-label="Collapse panel"
+          title={t("panel_collapse_title")}
+          aria-label={t("panel_collapse_aria")}
           onClick={onClose}
         >
           ×

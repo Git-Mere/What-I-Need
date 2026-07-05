@@ -1,0 +1,219 @@
+{
+  "extension_name": {
+    "message": "What I Need",
+    "description": "Extension name shown in the browser and store."
+  },
+  "extension_description": {
+    "message": "On-page toolbelt: scroll markers, freehand brush, global memo, calculator, and multi-term search.",
+    "description": "Extension description shown in the browser and store."
+  },
+  "rail_toggle": {
+    "message": "Toggle What I Need tools",
+    "description": "Accessible label for the collapsed rail tab that opens/closes the toolbar."
+  },
+  "feature_marker": {
+    "message": "Marker",
+    "description": "Display name of the Marker feature."
+  },
+  "feature_brush": {
+    "message": "Brush",
+    "description": "Display name of the Brush feature."
+  },
+  "feature_memo": {
+    "message": "Memo",
+    "description": "Display name of the Memo feature."
+  },
+  "feature_calculator": {
+    "message": "Calculator",
+    "description": "Display name of the Calculator feature."
+  },
+  "feature_multi_search": {
+    "message": "Multi-search",
+    "description": "Display name of the Multi-search feature."
+  },
+  "feature_eyedropper": {
+    "message": "Eyedropper",
+    "description": "Display name of the Eyedropper feature."
+  },
+  "feature_help": {
+    "message": "Help",
+    "description": "Display name of the Help feature."
+  },
+  "panel_collapse_title": {
+    "message": "Collapse",
+    "description": "Tooltip on the button that closes the expanded panel."
+  },
+  "panel_collapse_aria": {
+    "message": "Collapse panel",
+    "description": "Accessible label for the button that closes the expanded panel."
+  },
+  "coming_soon": {
+    "message": "Coming soon.",
+    "description": "Placeholder text for a feature that is not yet implemented."
+  },
+  "help_intro": {
+    "message": "Open any tool by pressing its button on the right-side rail. Marker and Brush are volatile tools that disappear when you leave the page.",
+    "description": "Intro paragraph at the top of the Help panel."
+  },
+  "help_marker_desc": {
+    "message": "Bookmark scroll positions. Use '+ Add mark' to save the current scroll position, then click an item in the list to jump back to it. Rename (pencil) and delete individually, up to 10. Volatile: cleared when you leave the page.",
+    "description": "Help description for the Marker feature."
+  },
+  "help_brush_desc": {
+    "message": "A pen for drawing freely over the page. Adjust color and width, with eraser and clear-all support. Draws only while the shortcut key (backtick ` by default) is held. Volatile (memory only).",
+    "description": "Help description for the Brush feature."
+  },
+  "help_memo_desc": {
+    "message": "A single global memo shared across every site. Saves automatically as you type.",
+    "description": "Help description for the Memo feature."
+  },
+  "help_calculator_desc": {
+    "message": "A basic calculator in the style of the Windows calculator. Keeps a recent calculation history you can review.",
+    "description": "Help description for the Calculator feature."
+  },
+  "help_multi_search_desc": {
+    "message": "Highlight multiple terms on the page at once (similar to Ctrl+F). A different color per term, ▲▼ to move between matches, up to 10 terms.",
+    "description": "Help description for the Multi-search feature."
+  },
+  "marker_add": {
+    "message": "+ Add mark",
+    "description": "Button that saves the current scroll position as a marker."
+  },
+  "marker_max": {
+    "message": "Max $COUNT$",
+    "description": "Disabled add-button label shown when the marker limit is reached.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "marker_empty": {
+    "message": "Save your current scroll position as a mark.",
+    "description": "Empty-state text shown when no markers exist."
+  },
+  "marker_name_aria": {
+    "message": "Mark name",
+    "description": "Accessible label for the marker rename input."
+  },
+  "marker_default_name": {
+    "message": "Mark $NUMBER$",
+    "description": "Default name given to a new marker.",
+    "placeholders": {
+      "number": { "content": "$1", "example": "3" }
+    }
+  },
+  "marker_goto_title": {
+    "message": "Go to this position",
+    "description": "Tooltip on a marker row that scrolls back to its position."
+  },
+  "marker_rename": {
+    "message": "Rename mark",
+    "description": "Tooltip/label for the marker rename (pencil) button."
+  },
+  "marker_delete": {
+    "message": "Delete mark",
+    "description": "Tooltip/label for the marker delete button."
+  },
+  "memo_placeholder": {
+    "message": "Type a note. It saves automatically.",
+    "description": "Placeholder text in the memo textarea."
+  },
+  "brush_brightness": {
+    "message": "Brightness",
+    "description": "Label for the brush brightness slider."
+  },
+  "brush_width": {
+    "message": "Width",
+    "description": "Label for the brush width slider."
+  },
+  "brush_eraser": {
+    "message": "Eraser",
+    "description": "Toggle button that switches the brush into eraser mode."
+  },
+  "brush_clear_all": {
+    "message": "Clear all",
+    "description": "Button that clears all brush strokes."
+  },
+  "brush_shortcut": {
+    "message": "Shortcut",
+    "description": "Label for the brush activation-key control."
+  },
+  "brush_press_key": {
+    "message": "Press a key…",
+    "description": "Prompt shown while capturing a new brush activation key."
+  },
+  "brush_hold_key": {
+    "message": "Hold $KEY$",
+    "description": "Brush activation-key button showing the current key.",
+    "placeholders": {
+      "key": { "content": "$1", "example": "`" }
+    }
+  },
+  "brush_hint": {
+    "message": "Hold {key} and drag to draw. Release to use the page.",
+    "description": "Hint under the brush controls. {key} is replaced at runtime by the bold key label."
+  },
+  "search_placeholder": {
+    "message": "Search term",
+    "description": "Placeholder text in a multi-search input row."
+  },
+  "search_prev": {
+    "message": "Previous match",
+    "description": "Tooltip/label for the previous-match navigation button."
+  },
+  "search_next": {
+    "message": "Next match",
+    "description": "Tooltip/label for the next-match navigation button."
+  },
+  "search_remove": {
+    "message": "Remove row",
+    "description": "Tooltip/label for the button that removes a search row."
+  },
+  "search_add": {
+    "message": "+ Add term",
+    "description": "Button that adds another multi-search term row."
+  },
+  "calc_keypad_aria": {
+    "message": "Calculator keypad",
+    "description": "Accessible label for the calculator keypad grid."
+  },
+  "calc_backspace_aria": {
+    "message": "Backspace",
+    "description": "Accessible label for the calculator backspace button."
+  },
+  "calc_history": {
+    "message": "History",
+    "description": "Toggle label for the calculator history section."
+  },
+  "calc_clear": {
+    "message": "Clear",
+    "description": "Button that clears the calculator history."
+  },
+  "calc_history_empty": {
+    "message": "No calculations yet.",
+    "description": "Empty-state text for the calculator history."
+  },
+  "calc_divide_by_zero": {
+    "message": "Cannot divide by zero",
+    "description": "Calculator error shown when dividing by zero."
+  },
+  "calc_invalid_input": {
+    "message": "Invalid input",
+    "description": "Calculator error shown for an invalid operation."
+  },
+  "eyedropper_pick": {
+    "message": "Pick color",
+    "description": "Button that starts the eyedropper color picker."
+  },
+  "eyedropper_unsupported": {
+    "message": "This browser doesn't support the eyedropper.",
+    "description": "Note shown when the browser lacks the EyeDropper API."
+  },
+  "eyedropper_copied": {
+    "message": "Copied",
+    "description": "Copy-button label shown briefly after copying the color."
+  },
+  "eyedropper_copy": {
+    "message": "Copy",
+    "description": "Button that copies the picked color to the clipboard."
+  }
+}

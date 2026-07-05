@@ -1,4 +1,5 @@
-import { FEATURES, type WidFeatureName } from "./features/registry";
+import { FEATURES, featureName, type WidFeatureName } from "./features/registry";
+import { t } from "../shared/i18n";
 import {
   RAIL_SHELL_HEIGHT,
   applyTop,
@@ -1009,7 +1010,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
   const tab = document.createElement("button");
   tab.className = "wid-tab";
   tab.type = "button";
-  tab.ariaLabel = "Toggle What I Need tools";
+  tab.ariaLabel = t("rail_toggle");
   // Click (mouse or keyboard Enter/Space) toggles the rail open. A drag suppresses
   // the trailing click via startVerticalDrag, so this only fires on a real tap.
   tab.addEventListener("click", () => {
@@ -1024,8 +1025,9 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     button.className = "wid-action";
     button.type = "button";
     button.textContent = feature.label;
-    button.title = feature.name;
-    button.ariaLabel = feature.name;
+    const label = featureName(feature.name);
+    button.title = label;
+    button.ariaLabel = label;
     button.addEventListener("click", () => {
       void openPanel(feature.name);
     });

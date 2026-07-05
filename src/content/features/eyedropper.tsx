@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { getStorageValue, setStorageValue } from "../../shared/storage";
+import { t } from "../../shared/i18n";
 
 // The native Chromium EyeDropper API is not in the default TS DOM lib, so declare
 // the minimal surface we use rather than casting to `any`.
@@ -96,13 +97,11 @@ export function Eyedropper() {
         disabled={!supported}
         onClick={pick}
       >
-        Pick color / 색 채집
+        {t("eyedropper_pick")}
       </button>
 
       {!supported && (
-        <p class="wid-eyedropper-note">
-          This browser doesn't support the eyedropper.
-        </p>
+        <p class="wid-eyedropper-note">{t("eyedropper_unsupported")}</p>
       )}
 
       {hex && (
@@ -120,7 +119,7 @@ export function Eyedropper() {
                 class="wid-eyedropper-copy"
                 onClick={copy}
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("eyedropper_copied") : t("eyedropper_copy")}
               </button>
             </div>
             <span class="wid-eyedropper-rgb">{hexToRgb(hex)}</span>

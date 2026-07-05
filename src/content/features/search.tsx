@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import { t } from "../../shared/i18n";
+
 // One distinct color per row. Rows are capped at PALETTE.length, so each row
 // keeps a unique color assigned 1:1 by index (no cycling / sharing). Hues walk
 // the whole wheel (~36deg apart) with alternating lightness so neighbors stay
@@ -347,7 +349,7 @@ export function Search() {
               <input
                 type="text"
                 class="wid-search-input"
-                placeholder="Search term"
+                placeholder={t("search_placeholder")}
                 value={row.term}
                 onInput={(event) =>
                   updateTerm(row.id, (event.currentTarget as HTMLInputElement).value)
@@ -360,8 +362,8 @@ export function Search() {
               <button
                 type="button"
                 class="wid-search-nav"
-                title="Previous match"
-                aria-label="Previous match"
+                title={t("search_prev")}
+                aria-label={t("search_prev")}
                 disabled={!hasMatches}
                 onClick={() => navigate(row.id, -1)}
               >
@@ -370,8 +372,8 @@ export function Search() {
               <button
                 type="button"
                 class="wid-search-nav"
-                title="Next match"
-                aria-label="Next match"
+                title={t("search_next")}
+                aria-label={t("search_next")}
                 disabled={!hasMatches}
                 onClick={() => navigate(row.id, 1)}
               >
@@ -380,8 +382,8 @@ export function Search() {
               <button
                 type="button"
                 class="wid-search-remove"
-                title="Remove row"
-                aria-label="Remove row"
+                title={t("search_remove")}
+                aria-label={t("search_remove")}
                 disabled={rows.length <= 1}
                 onClick={() => removeRow(row.id)}
               >
@@ -398,7 +400,7 @@ export function Search() {
         disabled={rows.length >= MAX_ROWS}
         onClick={addRow}
       >
-        + Add term
+        {t("search_add")}
       </button>
     </div>
   );

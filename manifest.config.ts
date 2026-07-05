@@ -2,7 +2,9 @@ import { defineManifest } from "@crxjs/vite-plugin";
 
 export default defineManifest({
   manifest_version: 3,
-  name: "What I Need",
+  name: "__MSG_extension_name__",
+  description: "__MSG_extension_description__",
+  default_locale: "en",
   version: "0.0.1",
   background: {
     service_worker: "src/background/service-worker.ts",
