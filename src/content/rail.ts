@@ -1,4 +1,4 @@
-import { FEATURES, featureName, type WidFeatureName } from "./features/registry";
+import { FEATURES, featureIcon, featureName, type WidFeatureName } from "./features/registry";
 import { t } from "../shared/i18n";
 import {
   RAIL_SHELL_HEIGHT,
@@ -103,6 +103,14 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       color: #17202a;
       font: 600 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       cursor: pointer;
+    }
+
+    .wid-action svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+      fill: currentColor;
+      pointer-events: none;
     }
 
     .wid-action:hover {
@@ -1024,7 +1032,12 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     const button = document.createElement("button");
     button.className = "wid-action";
     button.type = "button";
-    button.textContent = feature.label;
+    const icon = featureIcon(feature.name);
+    if (icon) {
+      button.innerHTML = icon;
+    } else {
+      button.textContent = feature.label;
+    }
     const label = featureName(feature.name);
     button.title = label;
     button.ariaLabel = label;

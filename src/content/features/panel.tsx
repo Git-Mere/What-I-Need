@@ -8,7 +8,7 @@ import {
   occupiedPanelHeight,
   startVerticalDrag
 } from "../rail-position";
-import { FEATURES, featureName, type WidFeatureName } from "./registry";
+import { FEATURES, featureIcon, featureName, type WidFeatureName } from "./registry";
 import { t } from "../../shared/i18n";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
@@ -104,20 +104,24 @@ function Panel({ initialFeature, onClose }: PanelProps) {
   return (
     <div class="wid-expanded" ref={panelRef}>
       <div class="wid-expanded-bar" role="tablist" onPointerDown={onBarPointerDown}>
-        {FEATURES.map((feature) => (
-          <button
-            key={feature.name}
-            type="button"
-            class="wid-action"
-            data-active={feature.name === active}
-            aria-selected={feature.name === active}
-            title={featureName(feature.name)}
-            aria-label={featureName(feature.name)}
-            onClick={() => setActive(feature.name)}
-          >
-            {feature.label}
-          </button>
-        ))}
+        {FEATURES.map((feature) => {
+          const icon = featureIcon(feature.name);
+          return (
+            <button
+              key={feature.name}
+              type="button"
+              class="wid-action"
+              data-active={feature.name === active}
+              aria-selected={feature.name === active}
+              title={featureName(feature.name)}
+              aria-label={featureName(feature.name)}
+              onClick={() => setActive(feature.name)}
+              dangerouslySetInnerHTML={icon ? { __html: icon } : undefined}
+            >
+              {icon ? null : feature.label}
+            </button>
+          );
+        })}
         <button
           type="button"
           class="wid-expanded-close"
