@@ -1,4 +1,4 @@
-import { FEATURES, featureIcon, featureName, type WidFeatureName } from "./features/registry";
+import { FEATURES, applyFeatureGlyph, featureName, type WidFeatureName } from "./features/registry";
 import { t } from "../shared/i18n";
 import {
   RAIL_SHELL_HEIGHT,
@@ -1064,12 +1064,7 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     const button = document.createElement("button");
     button.className = "wid-action";
     button.type = "button";
-    const icon = featureIcon(feature.name);
-    if (icon) {
-      button.innerHTML = icon;
-    } else {
-      button.textContent = feature.label;
-    }
+    applyFeatureGlyph(button, feature);
     const label = featureName(feature.name);
     button.title = label;
     button.ariaLabel = label;

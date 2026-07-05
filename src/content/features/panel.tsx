@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { render, type ComponentType } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import {
@@ -8,7 +8,8 @@ import {
   occupiedPanelHeight,
   startVerticalDrag
 } from "../rail-position";
-import { FEATURES, featureIcon, featureName, type WidFeatureName } from "./registry";
+import { FEATURES, featureName, type WidFeatureName } from "./registry";
+import { FeatureButton } from "./feature-button";
 import { t } from "../../shared/i18n";
 import { Brush } from "./brush";
 import { Calculator } from "./calc";
@@ -23,33 +24,23 @@ type PanelProps = {
   onClose: () => void;
 };
 
+// Content routing derived from the feature catalog's name union: one component
+// per feature name. Kept in the panel (lazy) chunk rather than the registry so
+// these components are not eagerly bundled into the content-script entry.
+const FEATURE_COMPONENTS: Partial<Record<WidFeatureName, ComponentType>> = {
+  Marker,
+  Brush,
+  Memo,
+  Calculator,
+  "Multi-search": Search,
+  Eyedropper,
+  Help
+};
+
 function FeatureContent({ feature }: { feature: WidFeatureName }) {
-  if (feature === "Marker") {
-    return <Marker />;
-  }
-
-  if (feature === "Brush") {
-    return <Brush />;
-  }
-
-  if (feature === "Memo") {
-    return <Memo />;
-  }
-
-  if (feature === "Calculator") {
-    return <Calculator />;
-  }
-
-  if (feature === "Multi-search") {
-    return <Search />;
-  }
-
-  if (feature === "Eyedropper") {
-    return <Eyedropper />;
-  }
-
-  if (feature === "Help") {
-    return <Help />;
+  const Component = FEATURE_COMPONENTS[feature];
+  if (Component) {
+    return <Component />;
   }
 
   return (
@@ -129,24 +120,14 @@ function Panel({ initialFeature, onClose }: PanelProps) {
     <div class="wid-expanded" ref={panelRef} tabIndex={-1} onKeyDown={onKeyDown}>
       <div class="wid-expanded-bar" onPointerDown={onBarPointerDown}>
         <div class="wid-expanded-tools" role="toolbar" aria-label={t("panel_toolbar_aria")}>
-          {FEATURES.map((feature) => {
-            const icon = featureIcon(feature.name);
-            return (
-              <button
-                key={feature.name}
-                type="button"
-                class="wid-action"
-                data-active={feature.name === active}
-                aria-pressed={feature.name === active}
-                title={featureName(feature.name)}
-                aria-label={featureName(feature.name)}
-                onClick={() => setActive(feature.name)}
-                dangerouslySetInnerHTML={icon ? { __html: icon } : undefined}
-              >
-                {icon ? null : feature.label}
-              </button>
-            );
-          })}
+          {FEATURES.map((feature) => (
+            <FeatureButton
+              key={feature.name}
+              feature={feature}
+              active={feature.name === active}
+              onClick={() => setActive(feature.name)}
+            />
+          ))}
         </div>
         <button
           type="button"
