@@ -988,6 +988,14 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       font: 600 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+    .wid-help-badge svg {
+      width: 15px;
+      height: 15px;
+      display: block;
+      fill: currentColor;
+      pointer-events: none;
+    }
+
     .wid-help-body {
       flex: 1 1 auto;
       min-width: 0;

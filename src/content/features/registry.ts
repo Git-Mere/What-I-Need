@@ -21,11 +21,11 @@ export type WidFeature = {
 };
 
 export const FEATURES: WidFeature[] = [
-  { name: "Marker", label: "M" },
+  { name: "Multi-search", label: "S" },
   { name: "Brush", label: "B" },
   { name: "Memo", label: "N" },
   { name: "Calculator", label: "C" },
-  { name: "Multi-search", label: "S" },
+  { name: "Marker", label: "M" },
   // Eyedropper disabled: native EyeDropper API freezes the browser on some platforms after a successful pick. Component/route preserved for later re-enable.
   { name: "Help", label: "?" }
 ];
