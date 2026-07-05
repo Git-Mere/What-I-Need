@@ -60,6 +60,10 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       touch-action: none;
     }
 
+    .wid-expanded:focus {
+      outline: none;
+    }
+
     .wid-tab:focus-visible,
     .wid-action:focus-visible,
     .wid-expanded-close:focus-visible,
@@ -182,6 +186,12 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       cursor: grab;
       touch-action: none;
       user-select: none;
+    }
+
+    .wid-expanded-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .wid-memo {

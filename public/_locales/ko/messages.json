@@ -47,6 +47,10 @@
     "message": "패널 접기",
     "description": "Accessible label for the button that closes the expanded panel."
   },
+  "panel_toolbar_aria": {
+    "message": "도구",
+    "description": "Accessible label for the panel toolbar holding the feature buttons."
+  },
   "coming_soon": {
     "message": "곧 제공됩니다.",
     "description": "Placeholder text for a feature that is not yet implemented."
@@ -187,6 +191,46 @@
   "calc_backspace_aria": {
     "message": "백스페이스",
     "description": "Accessible label for the calculator backspace button."
+  },
+  "calc_percent_aria": {
+    "message": "퍼센트",
+    "description": "Accessible label for the calculator percent button."
+  },
+  "calc_clear_entry_aria": {
+    "message": "입력 지우기",
+    "description": "Accessible label for the calculator clear-entry (CE) button."
+  },
+  "calc_clear_all_aria": {
+    "message": "전체 지우기",
+    "description": "Accessible label for the calculator clear-all (C) button."
+  },
+  "calc_reciprocal_aria": {
+    "message": "역수",
+    "description": "Accessible label for the calculator reciprocal (1/x) button."
+  },
+  "calc_square_aria": {
+    "message": "제곱",
+    "description": "Accessible label for the calculator square (x squared) button."
+  },
+  "calc_sqrt_aria": {
+    "message": "제곱근",
+    "description": "Accessible label for the calculator square-root button."
+  },
+  "calc_divide_aria": {
+    "message": "나누기",
+    "description": "Accessible label for the calculator divide button."
+  },
+  "calc_multiply_aria": {
+    "message": "곱하기",
+    "description": "Accessible label for the calculator multiply button."
+  },
+  "calc_toggle_sign_aria": {
+    "message": "부호 변경",
+    "description": "Accessible label for the calculator plus/minus sign-toggle button."
+  },
+  "calc_decimal_aria": {
+    "message": "소수점",
+    "description": "Accessible label for the calculator decimal-point button."
   },
   "calc_back": {
     "message": "뒤로",

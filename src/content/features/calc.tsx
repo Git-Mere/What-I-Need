@@ -392,20 +392,20 @@ export function Calculator() {
       <div class="wid-calc-display" aria-live="polite">{state.display}</div>
 
       <div class="wid-calc-keypad" aria-label={t("calc_keypad_aria")}>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={applyPercent}>%</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearEntry}>CE</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearAll}>C</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_percent_aria")} onClick={applyPercent}>%</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_clear_entry_aria")} onClick={clearEntry}>CE</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_clear_all_aria")} onClick={clearAll}>C</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_backspace_aria")} onClick={backspace}>{t("calc_back")}</button>
 
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("reciprocal")}>1/x</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("square")}>x^2</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("sqrt")}>sqrt</button>
-        <button type="button" class="wid-calc-button wid-calc-button-op" onClick={() => chooseOperator("/")}>/</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_reciprocal_aria")} onClick={() => applyUnary("reciprocal")}>1/x</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_square_aria")} onClick={() => applyUnary("square")}>x^2</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_sqrt_aria")} onClick={() => applyUnary("sqrt")}>sqrt</button>
+        <button type="button" class="wid-calc-button wid-calc-button-op" aria-label={t("calc_divide_aria")} onClick={() => chooseOperator("/")}>/</button>
 
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("7")}>7</button>
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("8")}>8</button>
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("9")}>9</button>
-        <button type="button" class="wid-calc-button wid-calc-button-op" onClick={() => chooseOperator("x")}>x</button>
+        <button type="button" class="wid-calc-button wid-calc-button-op" aria-label={t("calc_multiply_aria")} onClick={() => chooseOperator("x")}>x</button>
 
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("4")}>4</button>
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("5")}>5</button>
@@ -417,9 +417,9 @@ export function Calculator() {
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("3")}>3</button>
         <button type="button" class="wid-calc-button wid-calc-button-op" onClick={() => chooseOperator("+")}>+</button>
 
-        <button type="button" class="wid-calc-button" onClick={toggleSign}>+/-</button>
+        <button type="button" class="wid-calc-button" aria-label={t("calc_toggle_sign_aria")} onClick={toggleSign}>+/-</button>
         <button type="button" class="wid-calc-button" onClick={() => inputDigit("0")}>0</button>
-        <button type="button" class="wid-calc-button" onClick={inputDecimal}>.</button>
+        <button type="button" class="wid-calc-button" aria-label={t("calc_decimal_aria")} onClick={inputDecimal}>.</button>
         <button type="button" class="wid-calc-button wid-calc-button-equals" onClick={evaluate}>=</button>
       </div>
 

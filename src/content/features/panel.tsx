@@ -81,6 +81,30 @@ function Panel({ initialFeature, onClose }: PanelProps) {
     return () => observer.disconnect();
   }, []);
 
+  // On open, move focus into the panel (the active feature button, or the panel
+  // container as a fallback) so keyboard users land inside it instead of being
+  // stranded on the page.
+  useEffect(() => {
+    const panelEl = panelRef.current;
+    if (!panelEl) {
+      return;
+    }
+    const target =
+      panelEl.querySelector<HTMLElement>('.wid-action[data-active="true"]') ?? panelEl;
+    target.focus();
+  }, []);
+
+  // Escape closes the panel. Guard on defaultPrevented so a feature that handles
+  // its own Escape (e.g. the marker rename input calls preventDefault) is not
+  // overridden into closing the whole panel. Attaching to the panel container
+  // scopes this to when focus is inside it and is removed automatically on
+  // unmount.
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && !event.defaultPrevented) {
+      onClose();
+    }
+  };
+
   // Handle 3: dragging the top icon bar repositions the whole rail/panel. Drag
   // only from the bar's own area; a press on a feature icon or the close button
   // must run that button's click, not start a reposition. Clamp against the live
@@ -102,26 +126,28 @@ function Panel({ initialFeature, onClose }: PanelProps) {
   };
 
   return (
-    <div class="wid-expanded" ref={panelRef}>
-      <div class="wid-expanded-bar" role="tablist" onPointerDown={onBarPointerDown}>
-        {FEATURES.map((feature) => {
-          const icon = featureIcon(feature.name);
-          return (
-            <button
-              key={feature.name}
-              type="button"
-              class="wid-action"
-              data-active={feature.name === active}
-              aria-selected={feature.name === active}
-              title={featureName(feature.name)}
-              aria-label={featureName(feature.name)}
-              onClick={() => setActive(feature.name)}
-              dangerouslySetInnerHTML={icon ? { __html: icon } : undefined}
-            >
-              {icon ? null : feature.label}
-            </button>
-          );
-        })}
+    <div class="wid-expanded" ref={panelRef} tabIndex={-1} onKeyDown={onKeyDown}>
+      <div class="wid-expanded-bar" onPointerDown={onBarPointerDown}>
+        <div class="wid-expanded-tools" role="toolbar" aria-label={t("panel_toolbar_aria")}>
+          {FEATURES.map((feature) => {
+            const icon = featureIcon(feature.name);
+            return (
+              <button
+                key={feature.name}
+                type="button"
+                class="wid-action"
+                data-active={feature.name === active}
+                aria-pressed={feature.name === active}
+                title={featureName(feature.name)}
+                aria-label={featureName(feature.name)}
+                onClick={() => setActive(feature.name)}
+                dangerouslySetInnerHTML={icon ? { __html: icon } : undefined}
+              >
+                {icon ? null : feature.label}
+              </button>
+            );
+          })}
+        </div>
         <button
           type="button"
           class="wid-expanded-close"
