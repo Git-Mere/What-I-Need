@@ -6,6 +6,11 @@ export default defineManifest({
   description: "__MSG_extension_description__",
   default_locale: "en",
   version: "0.0.1",
+  icons: {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   background: {
     service_worker: "src/background/service-worker.ts",
     type: "module"
