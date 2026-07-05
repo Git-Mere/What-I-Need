@@ -180,6 +180,10 @@
     "message": "Backspace",
     "description": "Accessible label for the calculator backspace button."
   },
+  "calc_back": {
+    "message": "Back",
+    "description": "Visible label on the calculator backspace button."
+  },
   "calc_history": {
     "message": "History",
     "description": "Toggle label for the calculator history section."

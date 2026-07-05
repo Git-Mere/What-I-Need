@@ -371,7 +371,7 @@ export function Calculator() {
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={applyPercent}>%</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearEntry}>CE</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={clearAll}>C</button>
-        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_backspace_aria")} onClick={backspace}>Back</button>
+        <button type="button" class="wid-calc-button wid-calc-button-muted" aria-label={t("calc_backspace_aria")} onClick={backspace}>{t("calc_back")}</button>
 
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("reciprocal")}>1/x</button>
         <button type="button" class="wid-calc-button wid-calc-button-muted" onClick={() => applyUnary("square")}>x^2</button>

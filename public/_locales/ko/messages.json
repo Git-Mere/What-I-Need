@@ -180,6 +180,10 @@
     "message": "백스페이스",
     "description": "Accessible label for the calculator backspace button."
   },
+  "calc_back": {
+    "message": "뒤로",
+    "description": "Visible label on the calculator backspace button."
+  },
   "calc_history": {
     "message": "기록",
     "description": "Toggle label for the calculator history section."
