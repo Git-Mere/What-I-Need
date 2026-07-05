@@ -219,9 +219,12 @@ export function Brush() {
   const markerX = WHEEL_RADIUS + Math.cos(markerRad) * hsv.s * WHEEL_RADIUS;
   const markerY = WHEEL_RADIUS + Math.sin(markerRad) * hsv.s * WHEEL_RADIUS;
   const color = hsvToHex(hsv);
-  // The hint bolds the key inline, so localize around a {key} token and splice
-  // the <strong> in between rather than baking markup into the message.
-  const hintParts = t("brush_hint").split("{key}");
+  // The hint wraps the key in <strong> between two localized fragments. Some
+  // locales leave the leading fragment empty (Korean has no text before the
+  // key), so read them raw: t()'s "|| key" fallback would turn a legitimately
+  // empty message into the visible key name.
+  const hintBefore = chrome.i18n.getMessage("brush_hint_before_key");
+  const hintAfter = chrome.i18n.getMessage("brush_hint_after_key");
 
   return (
     <div class="wid-brush" aria-disabled={!ready}>
@@ -303,7 +306,7 @@ export function Brush() {
         </button>
       </div>
 
-      <p class="wid-brush-hint">{hintParts[0]}<strong>{keyLabel(keyCode)}</strong>{hintParts[1]}</p>
+      <p class="wid-brush-hint">{hintBefore}<strong>{keyLabel(keyCode)}</strong>{hintAfter}</p>
     </div>
   );
 }

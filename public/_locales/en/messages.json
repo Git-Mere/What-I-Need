@@ -148,9 +148,13 @@
       "key": { "content": "$1", "example": "`" }
     }
   },
-  "brush_hint": {
-    "message": "Hold {key} and drag to draw. Release to use the page.",
-    "description": "Hint under the brush controls. {key} is replaced at runtime by the bold key label."
+  "brush_hint_before_key": {
+    "message": "Hold ",
+    "description": "Hint under the brush controls, text before the bold key label."
+  },
+  "brush_hint_after_key": {
+    "message": " and drag to draw. Release to use the page.",
+    "description": "Hint under the brush controls, text after the bold key label."
   },
   "search_placeholder": {
     "message": "Search term",
