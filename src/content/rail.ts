@@ -184,6 +184,20 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       user-select: none;
     }
 
+    .wid-memo {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wid-memo-error {
+      margin: 0;
+      color: #dc2626;
+      font: 500 12px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
     .wid-memo-textarea {
       flex: 1;
       width: 100%;

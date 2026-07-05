@@ -46,10 +46,15 @@ function colorFor(index: number): string {
   return PALETTE[index];
 }
 
+// Direct reference to the <style> element we created, so cleanup removes exactly
+// that node instead of whatever getElementById(STYLE_ID) resolves to (a host-page
+// element could share the id). Module-level to persist across panel remounts.
+let highlightStyleEl: HTMLStyleElement | null = null;
+
 // Host-document <style> that maps each highlight name to its color. Shadow DOM
 // styles do not reach page Ranges, so this must live in the host document.
 function ensureHighlightStyle(): void {
-  if (document.getElementById(STYLE_ID)) {
+  if (highlightStyleEl?.isConnected) {
     return;
   }
   const style = document.createElement("style");
@@ -64,10 +69,12 @@ function ensureHighlightStyle(): void {
     `::highlight(${ACTIVE_HIGHLIGHT}) { background-color: #ff6a00; color: #ffffff; text-decoration: underline; }`
   ].join("\n");
   (document.head ?? document.documentElement).append(style);
+  highlightStyleEl = style;
 }
 
 function removeHighlightStyle(): void {
-  document.getElementById(STYLE_ID)?.remove();
+  highlightStyleEl?.remove();
+  highlightStyleEl = null;
 }
 
 function clearActiveHighlight(): void {

@@ -117,6 +117,10 @@
     "message": "메모를 입력하세요. 자동으로 저장됩니다.",
     "description": "Placeholder text in the memo textarea."
   },
+  "memo_save_failed": {
+    "message": "저장하지 못했습니다. 메모가 너무 길거나 저장 공간이 가득 찼을 수 있습니다.",
+    "description": "Shown under the memo when saving to storage fails."
+  },
   "brush_brightness": {
     "message": "밝기",
     "description": "Label for the brush brightness slider."

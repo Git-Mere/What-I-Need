@@ -117,6 +117,10 @@
     "message": "Type a note. It saves automatically.",
     "description": "Placeholder text in the memo textarea."
   },
+  "memo_save_failed": {
+    "message": "Couldn't save. Your note may be too long or storage is full.",
+    "description": "Shown under the memo when saving to storage fails."
+  },
   "brush_brightness": {
     "message": "Brightness",
     "description": "Label for the brush brightness slider."

@@ -19,6 +19,10 @@ declare global {
 
 const COPY_FEEDBACK_MS = 1000;
 
+// Matches the "#RRGGBB" the API/storage should hold; rejects corrupt data before
+// it reaches hexToRgb (which would otherwise render "rgb(NaN, ...)").
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
 const supported =
   typeof window !== "undefined" && typeof window.EyeDropper !== "undefined";
 
@@ -42,7 +46,7 @@ export function Eyedropper() {
       if (!active) {
         return;
       }
-      if (stored?.hex) {
+      if (typeof stored?.hex === "string" && HEX_COLOR.test(stored.hex)) {
         setHex(stored.hex);
       }
     });

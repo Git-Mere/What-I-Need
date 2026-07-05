@@ -1,25 +1,9 @@
-import { getStorageValue, setStorageValue } from "../../shared/storage";
-import type { WidSettings } from "../../shared/types";
+import { DEFAULT_BRUSH, getSettings, updateSettings } from "../settings-store";
 
 export type BrushSettings = {
   key: string;
   color: string;
   width: number;
-};
-
-// Defaults live here so the toolbar and engine agree on a single source.
-export const DEFAULT_BRUSH: BrushSettings = {
-  key: "Backquote",
-  color: "#e53935",
-  width: 4
-};
-
-// Used only when no settings object exists yet, so writing brush settings does
-// not clobber the rail on/off / position fields. Shared with rail-position.
-export const DEFAULT_SETTINGS: WidSettings = {
-  railEnabled: true,
-  disabledHosts: [],
-  brush: { ...DEFAULT_BRUSH }
 };
 
 type Point = { x: number; y: number };
@@ -124,14 +108,10 @@ class BrushEngine {
   }
 
   private async init(): Promise<void> {
-    const stored = await getStorageValue("wid:settings");
-    if (stored?.brush) {
-      this.settings = {
-        key: stored.brush.key || DEFAULT_BRUSH.key,
-        color: stored.brush.color || DEFAULT_BRUSH.color,
-        width: stored.brush.width || DEFAULT_BRUSH.width
-      };
-    }
+    // getSettings validates + coerces stored data, so this.settings.brush is
+    // always well-formed (defaults substituted for missing/corrupt fields).
+    const settings = await getSettings();
+    this.settings = { ...settings.brush };
     this.mountCanvas();
     this.attachListeners();
   }
@@ -453,9 +433,7 @@ class BrushEngine {
   }
 
   private async persist(): Promise<void> {
-    const stored = await getStorageValue("wid:settings");
-    const base = stored ?? DEFAULT_SETTINGS;
-    await setStorageValue("wid:settings", { ...base, brush: { ...this.settings } });
+    await updateSettings({ brush: { ...this.settings } });
   }
 
   setColor(color: string): void {

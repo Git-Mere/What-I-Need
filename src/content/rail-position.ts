@@ -1,5 +1,4 @@
-import { getStorageValue, setStorageValue } from "../shared/storage";
-import { DEFAULT_SETTINGS } from "./features/brush-engine";
+import { getSettings, updateSettings } from "./settings-store";
 
 // Height of the collapsed rail shell; keep in sync with .wid-rail-shell in rail.ts.
 export const RAIL_SHELL_HEIGHT = 232;
@@ -49,16 +48,17 @@ export function applyTop(root: HTMLElement, px: number): void {
 }
 
 export async function loadRailTop(): Promise<void> {
-  const stored = await getStorageValue("wid:settings");
-  if (typeof stored?.railTop === "number") {
-    railTop = stored.railTop;
+  const settings = await getSettings();
+  // getSettings guarantees railTop is a finite number when present (never NaN).
+  // Clamp the stored intent into the current viewport so a value saved on a
+  // taller window can't paint the rail off-screen.
+  if (typeof settings.railTop === "number") {
+    railTop = clampTop(settings.railTop, RAIL_SHELL_HEIGHT);
   }
 }
 
 async function persistRailTop(value: number): Promise<void> {
-  const stored = await getStorageValue("wid:settings");
-  const base = stored ?? DEFAULT_SETTINGS;
-  await setStorageValue("wid:settings", { ...base, railTop: value });
+  await updateSettings({ railTop: value });
 }
 
 // Swallow the click a browser fires after a drag so toggle / feature-select /

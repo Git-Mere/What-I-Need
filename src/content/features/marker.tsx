@@ -33,12 +33,25 @@ function scrollPercent(y: number): number {
 // number, so labels never renumber when earlier markers are removed.
 let nextMarkerId = 0;
 
+// Module-level so markers survive the panel unmounting and remounting within the
+// same page (switching tools, closing/reopening the panel). Still volatile /
+// memory-only: cleared on navigation or unload, matching the '휘발성' convention.
+let markerStore: Marker[] = [];
+
 function defaultName(id: number): string {
   return t("marker_default_name", [String(id)]);
 }
 
 export function Marker() {
-  const [markers, setMarkers] = useState<Marker[]>([]);
+  const [markers, setMarkersState] = useState<Marker[]>(markerStore);
+  // Mirror every update into the module-level store so a remount restores it.
+  const setMarkers = (updater: (current: Marker[]) => Marker[]) => {
+    setMarkersState((current) => {
+      const next = updater(current);
+      markerStore = next;
+      return next;
+    });
+  };
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);

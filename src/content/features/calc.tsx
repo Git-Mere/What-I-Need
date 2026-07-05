@@ -95,6 +95,26 @@ function applyBinary(
   }
 }
 
+// Coerce raw stored history into a well-formed array, dropping any item that is
+// not the expected shape (corrupt / old-version data) so it never reaches
+// .slice()/.reverse() or the render.
+function validateHistory(raw: unknown): WidCalcHistoryItem[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .filter(
+      (item): item is WidCalcHistoryItem =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof (item as WidCalcHistoryItem).expr === "string" &&
+        typeof (item as WidCalcHistoryItem).result === "string" &&
+        typeof (item as WidCalcHistoryItem).at === "number" &&
+        Number.isFinite((item as WidCalcHistoryItem).at)
+    )
+    .slice(-MAX_HISTORY_ITEMS);
+}
+
 function historyTime(item: WidCalcHistoryItem): string {
   return new Date(item.at).toLocaleTimeString([], {
     hour: "2-digit",
@@ -115,7 +135,11 @@ export function Calculator() {
       if (!active) {
         return;
       }
-      setHistory(items ?? []);
+      const stored = validateHistory(items);
+      // Merge rather than overwrite: if the user computed before the load
+      // resolved, those entries are already in `current` and must not be
+      // clobbered. Stored items are older, so they precede the new ones.
+      setHistory((current) => [...stored, ...current].slice(-MAX_HISTORY_ITEMS));
       historyLoaded.current = true;
     });
 
