@@ -46,6 +46,12 @@ function colorFor(index: number): string {
   return PALETTE[index];
 }
 
+// The CSS Custom Highlight API is not in every browser. When absent, the
+// feature still finds and counts matches (and ▲▼ still scrolls to them); only
+// the visual highlight paint is skipped, so nothing throws.
+const HIGHLIGHTS_SUPPORTED =
+  typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
+
 // Direct reference to the <style> element we created, so cleanup removes exactly
 // that node instead of whatever getElementById(STYLE_ID) resolves to (a host-page
 // element could share the id). Module-level to persist across panel remounts.
@@ -78,10 +84,16 @@ function removeHighlightStyle(): void {
 }
 
 function clearActiveHighlight(): void {
+  if (!HIGHLIGHTS_SUPPORTED) {
+    return;
+  }
   CSS.highlights.delete(ACTIVE_HIGHLIGHT);
 }
 
 function clearHighlights(): void {
+  if (!HIGHLIGHTS_SUPPORTED) {
+    return;
+  }
   for (let index = 0; index < PALETTE.length; index += 1) {
     CSS.highlights.delete(`${HIGHLIGHT_PREFIX}${index}`);
   }
@@ -179,15 +191,17 @@ function applySearch(terms: string[]): {
   });
 
   clearHighlights();
-  ensureHighlightStyle();
-  ranges.forEach((rowRanges, index) => {
-    if (rowRanges.length > 0) {
-      CSS.highlights.set(
-        `${HIGHLIGHT_PREFIX}${index}`,
-        new Highlight(...rowRanges)
-      );
-    }
-  });
+  if (HIGHLIGHTS_SUPPORTED) {
+    ensureHighlightStyle();
+    ranges.forEach((rowRanges, index) => {
+      if (rowRanges.length > 0) {
+        CSS.highlights.set(
+          `${HIGHLIGHT_PREFIX}${index}`,
+          new Highlight(...rowRanges)
+        );
+      }
+    });
+  }
 
   return { counts, ranges };
 }
@@ -317,10 +331,12 @@ export function Search() {
           : total - 1;
 
     const range = ranges[matchIndex];
-    ensureHighlightStyle();
-    const highlight = new Highlight(range);
-    highlight.priority = 1; // paint above the per-row color highlight
-    CSS.highlights.set(ACTIVE_HIGHLIGHT, highlight);
+    if (HIGHLIGHTS_SUPPORTED) {
+      ensureHighlightStyle();
+      const highlight = new Highlight(range);
+      highlight.priority = 1; // paint above the per-row color highlight
+      CSS.highlights.set(ACTIVE_HIGHLIGHT, highlight);
+    }
     setActive({ rowId, matchIndex });
     scrollRangeIntoView(range);
   };

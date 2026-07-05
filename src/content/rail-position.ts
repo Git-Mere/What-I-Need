@@ -23,7 +23,7 @@ export function currentRailTop(): number {
 }
 
 // The top currently painted on screen (a drag continues from here so it never jumps).
-export function appliedTop(): number {
+function appliedTop(): number {
   return applied;
 }
 

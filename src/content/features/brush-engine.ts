@@ -207,8 +207,26 @@ class BrushEngine {
     this.redrawAll();
   }
 
-  // Canvas origin sits at document (0,0), so page coords = client + scroll.
+  // Map a pointer event to the canvas's internal coordinate space. The canvas
+  // sits at the document origin at document size, so this is normally just
+  // client + scroll. Going through the canvas's own rect additionally corrects
+  // for any CSS transform / zoom on <html>/<body>: dividing by the rendered
+  // rect size undoes a root scale so strokes still track the cursor. In the
+  // untransformed case rect.width === cssWidth (so the scale factor is exactly
+  // 1.0) and rect.left === -scrollX, making the result pixel-identical to
+  // client + scroll.
   private toPagePoint(event: PointerEvent): Point {
+    if (this.canvas && this.cssWidth > 0 && this.cssHeight > 0) {
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const scaleX = this.cssWidth / rect.width;
+        const scaleY = this.cssHeight / rect.height;
+        return {
+          x: (event.clientX - rect.left) * scaleX,
+          y: (event.clientY - rect.top) * scaleY
+        };
+      }
+    }
     return { x: event.clientX + window.scrollX, y: event.clientY + window.scrollY };
   }
 

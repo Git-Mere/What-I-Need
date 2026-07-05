@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { getBrushEngine } from "./brush-engine";
-import { t } from "../../shared/i18n";
+import { t, tRaw } from "../../shared/i18n";
 
 const WHEEL_SIZE = 150;
 const WHEEL_RADIUS = WHEEL_SIZE / 2;
@@ -223,8 +223,8 @@ export function Brush() {
   // locales leave the leading fragment empty (Korean has no text before the
   // key), so read them raw: t()'s "|| key" fallback would turn a legitimately
   // empty message into the visible key name.
-  const hintBefore = chrome.i18n.getMessage("brush_hint_before_key");
-  const hintAfter = chrome.i18n.getMessage("brush_hint_after_key");
+  const hintBefore = tRaw("brush_hint_before_key");
+  const hintAfter = tRaw("brush_hint_after_key");
 
   return (
     <div class="wid-brush" aria-disabled={!ready}>

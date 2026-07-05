@@ -71,10 +71,6 @@ function formatNumber(value: number): string {
   return trimFormatted(rounded.toString());
 }
 
-function formatOperand(value: number): string {
-  return formatNumber(value);
-}
-
 function applyBinary(
   left: number,
   operator: BinaryOperator,
@@ -364,7 +360,7 @@ export function Calculator() {
 
     const formattedResult = formatNumber(result.value);
     persistHistoryItem({
-      expr: `${formatOperand(left)} ${operator} ${formatOperand(right)} =`,
+      expr: `${formatNumber(left)} ${operator} ${formatNumber(right)} =`,
       result: formattedResult,
       at: Date.now()
     });
@@ -383,7 +379,7 @@ export function Calculator() {
 
   const indicator =
     state.error === null && state.pendingOperator !== null && state.storedValue !== null
-      ? `${formatOperand(state.storedValue)} ${state.pendingOperator}`
+      ? `${formatNumber(state.storedValue)} ${state.pendingOperator}`
       : "";
 
   return (

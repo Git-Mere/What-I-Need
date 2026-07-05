@@ -403,17 +403,13 @@ export function renderRail(shadowRoot: ShadowRoot): void {
     }
 
     .wid-calc-history-empty {
-      color: #475569;
+      color: #94a3b8;
       font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow-wrap: anywhere;
     }
 
     .wid-calc-history-item + .wid-calc-history-item {
       margin-top: 8px;
-    }
-
-    .wid-calc-history-empty {
-      color: #94a3b8;
     }
 
     .wid-search {

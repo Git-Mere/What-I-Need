@@ -82,7 +82,7 @@ function Panel({ initialFeature, onClose }: PanelProps) {
     }
     const target =
       panelEl.querySelector<HTMLElement>('.wid-action[data-active="true"]') ?? panelEl;
-    target.focus();
+    target.focus({ preventScroll: true });
   }, []);
 
   // Escape closes the panel. Guard on defaultPrevented so a feature that handles
