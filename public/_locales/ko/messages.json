@@ -79,6 +79,10 @@
     "message": "페이지 내 여러 검색어를 동시에 하이라이트(Ctrl+F 유사). 검색어별로 다른 색, ▲▼로 매치 간 이동, 최대 10개 검색어.",
     "description": "Help description for the Multi-search feature."
   },
+  "help_support": {
+    "message": "잘 쓰고 계신가요? 커피 한 잔 사주세요 ☕",
+    "description": "Support/donation link shown at the bottom of the Help panel."
+  },
   "marker_add": {
     "message": "+ 마크 추가",
     "description": "Button that saves the current scroll position as a marker."

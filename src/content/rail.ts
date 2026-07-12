@@ -1033,6 +1033,30 @@ export function renderRail(shadowRoot: ShadowRoot): void {
       color: #64748b;
       font: 400 12px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
+    .wid-help-footer {
+      margin-top: 2px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(15, 23, 42, 0.12);
+      text-align: center;
+    }
+
+    .wid-help-support {
+      color: #64748b;
+      text-decoration: none;
+      font: 500 12px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wid-help-support:hover {
+      color: #17202a;
+      text-decoration: underline;
+    }
+
+    .wid-help-support:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
   `;
 
   const root = document.createElement("div");

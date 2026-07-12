@@ -79,6 +79,10 @@
     "message": "Highlight multiple terms on the page at once (similar to Ctrl+F). A different color per term, ▲▼ to move between matches, up to 10 terms.",
     "description": "Help description for the Multi-search feature."
   },
+  "help_support": {
+    "message": "Enjoying this? Buy me a coffee ☕",
+    "description": "Support/donation link shown at the bottom of the Help panel."
+  },
   "marker_add": {
     "message": "+ Add mark",
     "description": "Button that saves the current scroll position as a marker."

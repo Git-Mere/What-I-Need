@@ -17,6 +17,16 @@ export function Help() {
           </li>
         ))}
       </ul>
+      <footer class="wid-help-footer">
+        <a
+          class="wid-help-support"
+          href="https://buymeacoffee.com/mere.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t("help_support")}
+        </a>
+      </footer>
     </div>
   );
 }
