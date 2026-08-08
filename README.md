@@ -16,8 +16,9 @@ A right-edge toolbox for everyday web browsing — open a Galaxy-style side tool
 
 The toolbar can be dragged to any vertical position and ships with full English and Korean localization.
 
-<img width="640" height="400" alt="screenshot-help-1280x800-en" src="https://github.com/user-attachments/assets/bc081b16-489c-4da8-b07c-6db0ab82459e" />
+## Demo
 
+<img width="640" height="400" alt="screenshot-help-1280x800-en" src="https://github.com/user-attachments/assets/bc081b16-489c-4da8-b07c-6db0ab82459e" />
 
 ## Built With
 
