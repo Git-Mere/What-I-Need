@@ -6,6 +6,16 @@ A right-edge toolbox for everyday web browsing — open a Galaxy-style side tool
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6.svg)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4.svg)
 
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/what-i-need/ljhkpkjdkaoecipdodlfajgpgnoedfbk)**
+
+## Highlights
+
+- Manifest V3 extension in TypeScript with 5 in-page tools on a draggable side rail, built with Vite and Preact
+- The whole UI lives in a Shadow DOM, so host-page CSS cannot restyle it
+- Only a small vanilla TypeScript rail is injected on every page; the Preact panel loads through a dynamic `import()` on first open
+- Multi-term search on the CSS Custom Highlight API paints up to 10 color-coded terms without touching page text nodes
+- English and Korean ship from one build through `chrome.i18n`
+
 ## Features
 
 - **Multi-search** — find several keywords at once, each highlighted in its own color.
